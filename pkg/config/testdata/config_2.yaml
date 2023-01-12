@@ -1,0 +1,7 @@
+cluster:
+    - Name: cluster-1
+      Addr: https://test.vault.de
+      TokenExecCmd: vault login {{ .Addr }} 
+      Nodes:
+        - "{{ .Addr }}"
+      

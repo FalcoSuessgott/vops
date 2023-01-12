@@ -1,0 +1,40 @@
+linters-settings:
+  lll:
+    line-length: 180
+    allow-leading-space: true
+linters:
+  enable-all: true
+  disable:
+    - scopelint
+    - maligned
+    - interfacer
+    - golint
+    - testpackage
+    - forbidigo
+    - paralleltest
+    - exhaustivestruct
+    - goerr113
+    - wrapcheck
+    - gochecknoglobals
+    - varnamelen
+    - funlen
+    - gomnd
+    - containedctx
+    - ireturn
+    - exhaustruct
+    - varcheck
+    - deadcode
+    - structcheck
+    - nosnakecase
+    - ifshort
+    - nolintlint
+    - maintidx
+    - dupl
+    - goimports
+    - gci
+    - gofmt
+    - gofumpt
+    - rowserrcheck
+    - sqlclosecheck
+    - wastedassign
+    - tagliatelle

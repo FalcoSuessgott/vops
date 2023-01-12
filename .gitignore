@@ -1,0 +1,13 @@
+vops
+*.out
+vendor/
+coverage.out
+/dist
+.hugo_build.lock
+.envrc
+.vscode/
+manpages/
+completions/
+dist/
+snapshots
+assets/raft

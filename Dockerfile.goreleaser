@@ -1,0 +1,3 @@
+FROM alpine:3.17
+COPY vops /usr/bin/vops
+ENTRYPOINT ["/usr/bin/vops"]

@@ -1,0 +1,153 @@
+env:
+  - GO111MODULE=on
+  - CGO_ENABLED=0
+
+before:
+  hooks:
+    - go mod tidy
+    - ./scripts/manpages.sh
+    - ./scripts/completions.sh
+
+builds:
+  -
+    binary: vops
+    ldflags: -s -w -X main.version={{ .Version }}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      
+archives:
+  -
+    builds:
+      - vops
+    format_overrides:
+      - goos: windows
+        format: zip
+    replacements:
+      windows: Windows
+      darwin: Darwin
+      linux: Linux
+      amd64: x86_64
+
+nfpms:
+  - builds:
+      - vops
+    vendor: FalcoSuessgott
+    homepage:  https://github.com/FalcoSuessgott/vops
+    maintainer: "Tom Morelly <tom-morelly@gmx.de>"
+    description: "recursively list secrets from Vaults KV2 engine in various formats"
+    license: GPL-3.0
+    formats:
+      - apk
+      - deb
+      - rpm
+    bindir: /usr/bin
+    contents:
+      - src: ./manpages/vops.1.gz
+        dst: /usr/share/man/man1/vops.1.gz
+        file_info:
+          mode: 0644
+      - src: ./completions/vops.bash
+        dst: /usr/share/bash-completion/completions/vops
+        file_info:
+          mode: 0644
+      - src: ./completions/vops.fish
+        dst: /usr/share/fish/vendor_completions.d/vops.fish
+        file_info:
+          mode: 0644
+      - src: ./completions/vops.zsh
+        dst:  /usr/share/zsh/vendor-completions/_vops
+        file_info:
+          mode: 0644
+
+dockers:
+- image_templates:
+  - 'falcosuessgott/{{.ProjectName}}:{{ .Tag }}-amd64'
+  - 'ghcr.io/falcosuessgott/{{.ProjectName}}:{{ .Tag }}-amd64'
+  dockerfile: Dockerfile.goreleaser
+  use: buildx
+  build_flag_templates:
+  - "--pull"
+  - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/FalcoSuessgott/vops/master/README.md"
+  - "--label=io.artifacthub.package.logo-url=https://raw.githubusercontent.com/FalcoSuessgott/vops/master/www/static/images/logo.png"
+  - "--label=io.artifacthub.package.maintainers=[{\"name\":\"Tom Morelly\",\"email\":\"tommorelly@gmail.com\"}]"
+  - "--label=io.artifacthub.package.license=MIT"
+  - "--label=org.opencontainers.image.description=the swiss army knife when working with Vault KVv2 engines"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.source={{.GitURL}}"
+  - "--platform=linux/amd64"
+- image_templates:
+  - 'falcosuessgott/{{.ProjectName}}:{{ .Tag }}-arm64'
+  - 'ghcr.io/falcosuessgott/{{.ProjectName}}:{{ .Tag }}-arm64'
+  dockerfile:  Dockerfile.goreleaser
+  use: buildx
+  build_flag_templates:
+  - "--pull"
+  - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/FalcoSuessgott/vops/master/README.md"
+  - "--label=io.artifacthub.package.logo-url=https://raw.githubusercontent.com/FalcoSuessgott/vops/master/www/static/images/logo.png"
+  - "--label=io.artifacthub.package.maintainers=[{\"name\":\"Tom Morelly\",\"email\":\"tommorelly@gmail.com\"}]"
+  - "--label=io.artifacthub.package.license=MIT"
+  - "--label=org.opencontainers.image.description=the swiss army knife when working with Vault KVv2 engines"
+  - "--label=org.opencontainers.image.created={{.Date}}"
+  - "--label=org.opencontainers.image.name={{.ProjectName}}"
+  - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+  - "--label=org.opencontainers.image.version={{.Version}}"
+  - "--label=org.opencontainers.image.source={{.GitURL}}"
+  - "--platform=linux/arm64"
+  goarch: arm64
+
+docker_manifests:
+- name_template: 'falcosuessgott/{{.ProjectName}}:{{ .Tag }}'
+  image_templates:
+  - 'falcosuessgott/{{.ProjectName}}:{{ .Tag }}-amd64'
+  - 'falcosuessgott/{{.ProjectName}}:{{ .Tag }}-arm64'
+- name_template: 'ghcr.io/falcosuessgott/{{.ProjectName}}:{{ .Tag }}'
+  image_templates:
+  - 'ghcr.io/falcosuessgott/{{.ProjectName}}:{{ .Tag }}-amd64'
+  - 'ghcr.io/falcosuessgott/{{.ProjectName}}:{{ .Tag }}-arm64'
+- name_template: 'falcosuessgott/{{.ProjectName}}:latest'
+  image_templates:
+  - 'falcosuessgott/{{.ProjectName}}:{{ .Tag }}-amd64'
+  - 'falcosuessgott/{{.ProjectName}}:{{ .Tag }}-arm64'
+- name_template: 'ghcr.io/falcosuessgott/{{.ProjectName}}:latest'
+  image_templates:
+  - 'ghcr.io/falcosuessgott/{{.ProjectName}}:{{ .Tag }}-amd64'
+  - 'ghcr.io/falcosuessgott/{{.ProjectName}}:{{ .Tag }}-arm64'
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+    - '^test:'
+    - '^chore'
+    - 'merge conflict'
+    - Merge pull request
+    - Merge remote-tracking branch
+    - Merge branch
+    - go mod tidy
+  groups:
+    - title: Dependency updates
+      regexp: '^.*?(feat|fix)\(deps\)!?:.+$'
+      order: 300
+    - title: 'New Features'
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 100
+    - title: 'Bug fixes'
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 200
+    - title: 'Documentation updates'
+      regexp: ^.*?doc(\([[:word:]]+\))??!?:.+$
+      order: 400
+    - title: Other work
+      order: 9999
