@@ -8,12 +8,12 @@ import (
 	"github.com/FalcoSuessgott/vops/cmd/config"
 	"github.com/FalcoSuessgott/vops/cmd/generate_root"
 	"github.com/FalcoSuessgott/vops/cmd/initialize"
+	"github.com/FalcoSuessgott/vops/cmd/manpage"
 	"github.com/FalcoSuessgott/vops/cmd/rekey"
 	"github.com/FalcoSuessgott/vops/cmd/seal"
 	"github.com/FalcoSuessgott/vops/cmd/snapshot"
 	"github.com/FalcoSuessgott/vops/cmd/unseal"
 	"github.com/FalcoSuessgott/vops/cmd/version"
-	cfg "github.com/FalcoSuessgott/vops/pkg/config"
 	"github.com/spf13/cobra"
 )
 
@@ -32,9 +32,6 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		Short:         "A HashiCorp Vault cluster operations tool",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			return cfg.ValidateConfig(cfgFile)
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -53,6 +50,7 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		config.NewConfigCmd(cfgFile),
 		snapshot.NewSnapshotCmd(cfgFile),
 		config.NewConfigCmd(cfgFile),
+		manpage.NewManCmd().Cmd,
 	)
 
 	return cmd

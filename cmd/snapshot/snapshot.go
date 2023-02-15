@@ -33,6 +33,9 @@ func NewSnapshotCmd(cfg string) *cobra.Command {
 		Short:         "creates or restorees a snapshot from a single or all vault cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return config.ValidateConfig(cfg)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},

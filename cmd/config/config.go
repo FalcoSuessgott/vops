@@ -17,6 +17,9 @@ func NewConfigCmd(cfg string) *cobra.Command {
 		Short:         "config",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return config.ValidateConfig(cfg)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},

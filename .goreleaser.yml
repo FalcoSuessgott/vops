@@ -4,7 +4,6 @@ env:
 
 before:
   hooks:
-    - go mod tidy
     - ./scripts/manpages.sh
     - ./scripts/completions.sh
 
@@ -38,8 +37,8 @@ nfpms:
       - vops
     vendor: FalcoSuessgott
     homepage:  https://github.com/FalcoSuessgott/vops
-    maintainer: "Tom Morelly <tom-morelly@gmx.de>"
-    description: "recursively list secrets from Vaults KV2 engine in various formats"
+    maintainer: "Tom Morelly <tommorelly@gmail.com>"
+    description: "a HashiCorp Vault cluster management tool"
     license: GPL-3.0
     formats:
       - apk
@@ -73,10 +72,9 @@ dockers:
   build_flag_templates:
   - "--pull"
   - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/FalcoSuessgott/vops/master/README.md"
-  - "--label=io.artifacthub.package.logo-url=https://raw.githubusercontent.com/FalcoSuessgott/vops/master/www/static/images/logo.png"
   - "--label=io.artifacthub.package.maintainers=[{\"name\":\"Tom Morelly\",\"email\":\"tommorelly@gmail.com\"}]"
   - "--label=io.artifacthub.package.license=MIT"
-  - "--label=org.opencontainers.image.description=the swiss army knife when working with Vault KVv2 engines"
+  - "--label=org.opencontainers.image.description=a HashiCorp Vault cluster management tool"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"
@@ -91,10 +89,9 @@ dockers:
   build_flag_templates:
   - "--pull"
   - "--label=io.artifacthub.package.readme-url=https://raw.githubusercontent.com/FalcoSuessgott/vops/master/README.md"
-  - "--label=io.artifacthub.package.logo-url=https://raw.githubusercontent.com/FalcoSuessgott/vops/master/www/static/images/logo.png"
   - "--label=io.artifacthub.package.maintainers=[{\"name\":\"Tom Morelly\",\"email\":\"tommorelly@gmail.com\"}]"
   - "--label=io.artifacthub.package.license=MIT"
-  - "--label=org.opencontainers.image.description=the swiss army knife when working with Vault KVv2 engines"
+  - "--label=org.opencontainers.image.description=a HashiCorp Vault cluster management tool"
   - "--label=org.opencontainers.image.created={{.Date}}"
   - "--label=org.opencontainers.image.name={{.ProjectName}}"
   - "--label=org.opencontainers.image.revision={{.FullCommit}}"

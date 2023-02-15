@@ -33,6 +33,9 @@ func NewUnsealCmd(cfg string) *cobra.Command {
 		Short:         "unseal a single node or a single cluster or all cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return config.ValidateConfig(cfg)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println("[ Unseal ]")
 			fmt.Printf("using %s\n", cfg)

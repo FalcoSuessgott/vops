@@ -28,6 +28,9 @@ func NewGenerateRootCmd(cfg string) *cobra.Command {
 		Short:         "generates a new root token for a single or all cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return config.ValidateConfig(cfg)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println("[ Generate Root Token ]")
 			fmt.Printf("using %s\n", cfg)
