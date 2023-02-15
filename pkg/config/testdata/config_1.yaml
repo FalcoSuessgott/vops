@@ -1,0 +1,15 @@
+Cluster:
+    - Name: cluster-1
+      Addr: https://test.vault.de
+      TokenExecCmd: vault login 
+      Keys:
+        Path: file.json
+        Shares: 5
+        Threshold: 3
+      SnapshotDirectory: snapshot/
+      Nodes:
+        - vault-server-01
+        - vault-server-02
+        - vault-server-03
+      ExtraEnv:
+        VAULT_SKIP_VERIFY: true

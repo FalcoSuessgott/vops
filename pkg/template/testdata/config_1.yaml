@@ -1,0 +1,5 @@
+Name: cluster-1
+Addr: "http://127.0.0.1:8200"
+KeyfilePath: "{{ .Name }}.json"
+Nodes:
+  - "{{ .Addr }}"

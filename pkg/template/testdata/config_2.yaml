@@ -1,0 +1,6 @@
+Name: cluster-1
+Addr: "http://127.0.0.1:8200"
+TokenExecCmd: "jq -r root_token {{ .KeyfilePath }}"
+KeyfilePath: "{{ .Name }}.json"
+Nodes:
+  - "{{ .Addr }}"
