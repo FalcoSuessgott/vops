@@ -1,5 +1,19 @@
-# vops
-`vops` - a HashiCorp Vault cluster management tool
+<div align="center">
+
+`vops` - A HashiCorp Vault cluster management tool
+
+<img src="https://github.com/FalcoSuessgott/vops/actions/workflows/test.yml/badge.svg" alt="drawing"/>
+<img src="https://github.com/FalcoSuessgott/vops/actions/workflows/lint.yml/badge.svg" alt="drawing"/>
+<img src="https://codecov.io/gh/FalcoSuessgott/vops/branch/master/graph/badge.svg" alt="drawing"/>
+<img src="https://img.shields.io/github/downloads/FalcoSuessgott/vops/total.svg" alt="drawing"/>
+<img src="https://img.shields.io/github/v/release/FalcoSuessgott/vops" alt="drawing"/>
+<img src="https://img.shields.io/docker/pulls/falcosuessgott/vops" alt="drawing"/>
+
+</div>
+
+
+***`vops` is in very early stage and is likely to change***
+
 
 # Background
 I automate, develop and maintain a lot of Vault cluster for different clients. When automating Vault using tools such as `terraform` and `ansible` I was missing a small utility that allows me to quickly perform certain operations like generate a new root token or create a snapshot. Thus I came up with `vops`, which stands for **v**ault-**op**eration**s**
@@ -151,7 +165,7 @@ generated on OTP for root token creation
 started root token generation process
 root token generation completed
 new root token: "hvs.byNOU9DVxCbvgatIMHAwXOKS"
-make sure to update your token exec commands in your vops configfile if necessary.
+make sure to uvopspdate your token exec commands in your vops configfile if necessary.
 ```
 
 ## Snapshots
@@ -171,22 +185,3 @@ created snapshot file "snapshots/20230210232954" for cluster "cluster-1"
 # Global Flags
 * `--config` (`VOPS_CONFIG`) - `vops` configuration file (default: `vops.yaml`)
 * `--all-cluster` (`-A`) - perform the chosen operation for all defined clusters.
-
----
-
-# TODOs
-* validate input (shares, keys > 0)
-* replication (DR, PR)
-* support gpg key for keyfile encryption
-* bool flat for unsealing
-* status list all cluster, rendered values and check token login command
-* subcommand for backup & restore
-* snapshot restore
-* improve global precheck command
-* rekey write to file 
-* generate vhs tape with examples
-* handle missing keyfile if not initialized or something
-* use shares and keys for init and other cmds
-* consider using rows instead of columns for cfg vali
-* copy token command
-* custom commands ? customCmds: show policies: operator login -f .... -> pass to vault cli
