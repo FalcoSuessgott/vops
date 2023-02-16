@@ -11,3 +11,4 @@ completions/
 dist/
 snapshots
 assets/raft
+cluster-1.json

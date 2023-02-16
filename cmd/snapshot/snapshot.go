@@ -25,7 +25,7 @@ func newDefaultSnapshotOptions() *snapshotOptions {
 	}
 }
 
-// NewGenerateRootCmd vops rekey command.
+// NewSnapshotCmd snapshot command.
 func NewSnapshotCmd(cfg string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "snapshot",
@@ -138,7 +138,7 @@ func newSnapRestoreCmd(cfg string) *cobra.Command {
 func saveSnapshot(cluster config.Cluster) error {
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
 
-	if err := cluster.ApplyEnvironmentVariables(); err != nil {
+	if err := cluster.ApplyEnvironmentVariables(cluster.ExtraEnv); err != nil {
 		return err
 	}
 
@@ -174,7 +174,7 @@ func saveSnapshot(cluster config.Cluster) error {
 func restoreSnapshot(cluster config.Cluster) error {
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
 
-	if err := cluster.ApplyEnvironmentVariables(); err != nil {
+	if err := cluster.ApplyEnvironmentVariables(cluster.ExtraEnv); err != nil {
 		return err
 	}
 

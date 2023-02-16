@@ -6,7 +6,8 @@ import (
 	"os"
 
 	"github.com/FalcoSuessgott/vops/cmd/config"
-	"github.com/FalcoSuessgott/vops/cmd/generate_root"
+	"github.com/FalcoSuessgott/vops/cmd/custom"
+	"github.com/FalcoSuessgott/vops/cmd/generateroot"
 	"github.com/FalcoSuessgott/vops/cmd/initialize"
 	"github.com/FalcoSuessgott/vops/cmd/manpage"
 	"github.com/FalcoSuessgott/vops/cmd/rekey"
@@ -49,6 +50,7 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		version.NewVersionCmd(v),
 		config.NewConfigCmd(cfgFile),
 		snapshot.NewSnapshotCmd(cfgFile),
+		custom.NewCustomCmd(cfgFile),
 		config.NewConfigCmd(cfgFile),
 		manpage.NewManCmd().Cmd,
 	)

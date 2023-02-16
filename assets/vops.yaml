@@ -1,3 +1,7 @@
+CustomCmds:
+  list-peers: 'vault operator raft list-peers'
+  status: 'vault status'
+  
 Cluster:
   - Name: cluster-1
     Addr: "http://127.0.0.1:8200"
@@ -12,15 +16,17 @@ Cluster:
     ExtraEnv:
      VAULT_SKIP_VERIFY: true
      VAULT_TLS_CA: "ok"
-     
-  # - Name: cluster-2
-  #   Addr: "http://127.0.0.1:8200"
-  #   TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}"
-  #   Keys:
-  #     Path: "{{ .Name }}.json"
-  #   SnapshotDirectory: "snapshots/"
-  #   Nodes:
-  #     - "{{ .Addr }}"
-  #   ExtraEnv:
-  #    VAULT_SKIP_VERIFY: true
-  #    VAULT_TLS_CA: "ok"
+
+  - Name: cluster-2
+    Addr: "http://127.0.0.1:8200"
+    TokenExecCmd: "jq -r '.root_token' cluster-1.json"
+    Keys:
+      Path: "{{ .Name }}.json"
+      Shares: 1
+      Threshold: 1
+    SnapshotDirectory: "snapshots/"
+    Nodes:
+      - "{{ .Addr }}"
+    ExtraEnv:
+     VAULT_SKIP_VERIFY: true
+     VAULT_TLS_CA: "ok"

@@ -77,7 +77,7 @@ func NewSealCmd(cfg string) *cobra.Command {
 func sealCluster(cluster config.Cluster) error {
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
 
-	if err := cluster.ApplyEnvironmentVariables(); err != nil {
+	if err := cluster.ApplyEnvironmentVariables(cluster.ExtraEnv); err != nil {
 		return err
 	}
 

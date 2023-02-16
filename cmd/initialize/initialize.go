@@ -86,9 +86,9 @@ func (o *initOptions) initializeCluster(cluster config.Cluster) error {
 	}
 
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
-	fmt.Printf("attempting intialization of cluster \"%s\" with %d shares and a threshold of %d\n", cluster.Name, o.Shares, o.Threshold)
+	fmt.Printf("attempting intialization of cluster \"%s\" with %d shares and a threshold of %d\n", cluster.Name, cluster.Keys.Shares, cluster.Keys.Threshold)
 
-	if err := cluster.ApplyEnvironmentVariables(); err != nil {
+	if err := cluster.ApplyEnvironmentVariables(cluster.ExtraEnv); err != nil {
 		return err
 	}
 
