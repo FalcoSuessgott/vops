@@ -54,3 +54,7 @@ token: ## copies vault token in clipboard buffer
 clean: ## clean the development vault
 	@rm -rf snapshots/ coverage.out dist/ $(projectname) manpages/ dist/ completions/ assets/raft/* || true
 	@kill -9 $(shell pgrep -x vault) 2> /dev/null || true
+
+.PHONY: vhs
+vhs: install vault ## generate demo gif
+	vhs < assets/demo.tape

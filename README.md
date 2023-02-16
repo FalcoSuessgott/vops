@@ -1,6 +1,8 @@
 <div align="center">
 
-`vops` - A HashiCorp Vault cluster management tool
+<h2> A HashiCorp Vault Cluster Management tool </h2>
+
+<img src="assets/demo.gif" alt="drawing"/>
 
 <img src="https://github.com/FalcoSuessgott/vops/actions/workflows/test.yml/badge.svg" alt="drawing"/>
 <img src="https://github.com/FalcoSuessgott/vops/actions/workflows/lint.yml/badge.svg" alt="drawing"/>
@@ -46,14 +48,14 @@ docker run ghcr.io/falcosuessgott/vops version
 
 # Ubuntu/Debian
 version=$(curl -S "https://api.github.com/repos/FalcoSuessgott/vops/releases/latest" | jq -r '.tag_name[1:]')
-curl -OL "https://github.com/FalcoSuessgott/vops/releases/latest/download/vops_${version}_$(uname)_$(uname -m).deb"
-sudo dpkg -i "./vops_${version}.deb"
+curl -OL "https://github.com/FalcoSuessgott/vops/releases/latest/download/vops_${version}_linux_amd64.deb"
+sudo dpkg -i "./vops_${version}_linux_amd64.deb"
 vops version
 
 # Fedora/CentOS/RHEL
 version=$(curl -S "https://api.github.com/repos/FalcoSuessgott/vops/releases/latest" | jq -r '.tag_name[1:]')
-curl -OL "https://github.com/FalcoSuessgott/vops/releases/latest/download/vops_${version}_$(uname)_$(uname -m).rpm"
-sudo dnf localinstall "./vops_${version}.deb"
+curl -OL "https://github.com/FalcoSuessgott/vops/releases/latest/download/vops_${version}_linux_amd64.rpm"
+sudo dnf localinstall "./vops_${version}_linux_amd64.rpm"
 vops version
 
 # Sources
