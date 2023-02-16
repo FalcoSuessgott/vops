@@ -44,41 +44,24 @@ func newConfigExampleCmd() *cobra.Command {
 			exampleCfg := &config.Config{
 				CustomCmds: map[string]interface{}{
 					"list-peers": "vault operator raft list-peers",
+					"status":     "vault status",
 				},
 				Cluster: []config.Cluster{
 					{
-						Name:         "vault-dev",
-						Addr:         "https://vault-dev.example",
+						Name:         "cluster-1",
+						Addr:         "http://127.0.0.1:8200",
 						TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}",
 						Keys: &config.KeyConfig{
 							Threshold: 1,
 							Shares:    1,
 							Path:      "{{ .Name }}.json",
 						},
-						SnapshotDir: "snapshots/{{ .Name }}/",
+						SnapshotDir: "{{ .Name }}/",
 						Nodes: []string{
-							"{{ .Name }}-node-01.example",
-							"{{ .Name }}-node-02.example",
-							"{{ .Name }}-node-02.example",
+							"{{ .Addr }}",
 						},
 						ExtraEnv: map[string]interface{}{
 							"VAULT_TLS_SKIP_VERIFY": true,
-						},
-					},
-					{
-						Name:         "vault-prod",
-						Addr:         "https://vault-prod.example",
-						TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}",
-						Keys: &config.KeyConfig{
-							Shares:    5,
-							Threshold: 3,
-							Path:      "{{ .Name }}.json",
-						},
-						SnapshotDir: "snapshots/{{ .Name }}/",
-						Nodes: []string{
-							"{{ .Name }}-node-01.example",
-							"{{ .Name }}-node-02.example",
-							"{{ .Name }}-node-02.example",
 						},
 					},
 				},

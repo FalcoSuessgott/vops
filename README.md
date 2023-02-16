@@ -30,189 +30,205 @@ I automate, develop and maintain a lot of Vault cluster for different clients. W
 * define custom commands then can be run for any cluster
 
 # Installation
-`vops` comes as `RPM`, `DEB`, `APK`, Container and CLI-tool:
-
 ```bash
-# using curl
-curl ...
-# go
-go get github.com/FalcoSuessgott/vops
-vops status
+# curl
+version=$(curl -S "https://api.github.com/repos/FalcoSuessgott/vops/releases/latest" | jq -r '.tag_name[1:]')
+curl -OL "https://github.com/FalcoSuessgott/vops/releases/latest/download/vops_${version}_$(uname)_$(uname -m).tar.gz"
+tar xzf "vops_${version}_$(uname)_$(uname -m).tar.gz"
+./vops version
 
-# docker/podman
-docker pull ghcr.io/falcosuessgott/vops
-docker run falcosuessgott/vops -v `$(PWD):/ooo` status
+# Go 
+go install github.com/FalcoSuessgott/vops@latest
+vops version
 
+# Docker/Podman
+docker run ghcr.io/falcosuessgott/vops version
 
-...
+# Ubuntu/Debian
+version=$(curl -S "https://api.github.com/repos/FalcoSuessgott/vops/releases/latest" | jq -r '.tag_name[1:]')
+curl -OL "https://github.com/FalcoSuessgott/vops/releases/latest/download/vops_${version}_$(uname)_$(uname -m).deb"
+sudo dpkg -i "./vops_${version}.deb"
+vops version
+
+# Fedora/CentOS/RHEL
+version=$(curl -S "https://api.github.com/repos/FalcoSuessgott/vops/releases/latest" | jq -r '.tag_name[1:]')
+curl -OL "https://github.com/FalcoSuessgott/vops/releases/latest/download/vops_${version}_$(uname)_$(uname -m).rpm"
+sudo dnf localinstall "./vops_${version}.deb"
+vops version
+
+# Sources
+git clone https://github.com/FalcoSuessgott/vops && cd vops
+go build 
 ```
+
+# Usage
+`vops` looks for a `vops.yaml` configuration file in your `$PWD`, you change the location by setting `VOPS_CONFIG`.
+
+`vops` allows you to use templates and environment variables in your configuration file: 
+
+<table>
+<tr>
+<td> Default </td> <td> Templated </td>
+</tr>
+<tr>
+<td>
+
+```yaml
+Cluster:
+  - Name: dev-cluster
+    Addr: "http://192.168.0.100:8200"
+    TokenExecCmd: "jq -r '.root_token' dev-cluster-token-file.json"
+    Keys:
+      Path: "dev-cluster-token-file.json"
+    SnapshotDirectory: "/home/user/snapshots/"
+    Nodes:
+      - "http://192.168.0.100:8200"
+    ExtraEnv:
+     VAULT_SKIP_VERIFY: true
+
+  - Name: prod-cluster
+    ...
+```
+
+</td>
+<td> 
+
+```yaml
+Cluster:
+  - Name: dev-cluster
+    Addr: "http://192.168.0.100:8200"
+    TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}"
+    Keys:
+      Path: "{{ .Name }}-token-file.json"
+    SnapshotDirectory: "{{ .Env.HOME }}/snapshots/"
+    Nodes:
+      - "{{ .Addr }}"
+    ExtraEnv:
+     VAULT_SKIP_VERIFY: true
+
+  - Name: prod-cluster
+    ....
+```
+</td>
+</tr>
+</table>
 
 # Quickstart
-Imagine the following `vops.yaml` configuration file:
-
-```yaml
-cluster:
-  - name: dev-cluster
-    addr: "http://192.168.0.100:8200"
-    tokenExecCmd: "cat dev-cluster-token-file.json"
-    keyfilePath: "dev-cluster-token-file.json"
-    snapshotDirectory: "./snapshots/"
-    nodes:
-      - "http://192.168.0.100:8200"
-    extraEnv:
-     VAULT_SKIP_VERIFY: true
-```
-
-using `vops` ability to use Go-Template Syntax that file could be rewritten as:
-
-```yaml
-cluster:
-  - name: dev-cluster
-    addr: "http://192.168.0.100:8200"
-    tokenExecCmd: "cat {{ .KeyFilePath }}"
-    keyfilePath: "{{ .Name }}-token-file.json"
-    snapshotDirectory: "./snapshots/"
-    nodes:
-      - "{{ .Addr }}"
-    extraEnv:
-     VAULT_SKIP_VERIFY: true
-```
-
-You will understand how this makes maintaining multiple cluster more convenient.
-
-`vops` also allows to render any existing environment variable for example:
-
-```yaml
-cluster:
-  - name: dev-cluster
-    keyfilePath: "{{ .Env.PWD}}/{{ .Name }}-token-file.json"
-    snapshotDirectory: "{{ .Env.Home }}/snapshots/"
-```
-
-`vops` looks for a `vops.yaml` in the current working directory. You can specify a file by using the `--config` CLI arg or setting the `VOPS_CONFIG` env var.
-
-# Operations
-## Initialization
+## Prerequisites 
+Start a Vault with Integrated Storage locally:
 
 ```bash
-> vops init -c cluster-1
-[ VOPS ]
+mkdir raft
+cat <<EOF > vault-cfg.hcl
+cluster_addr = "http://127.0.0.1:8201"
+api_addr = "http://127.0.0.1:8200"
+
+storage "raft" {
+  path = "./raft"
+  node_id = "node"
+}
+
+ui = true
+
+listener "tcp" {
+  address = "0.0.0.0:8200"
+  tls_disable = true
+}
+EOF
+vault server -config=vault-cfg.hcl
+```
+
+## `vops.yaml`
+In another Terminal create a `vops.yaml` example config:
+
+```bash
+vops config example > vops.yaml
+cat vops.yaml
+```
+
+## Initialize
+> initialize vault cluster 
+```bash
+$> vops init --cluster cluster-1
+[ Intialization ]
 using vops.yaml
-attempting intialization of cluster "cluster-1" with 5 shares and a threshold of 3
-applying VAULT_SKIP_VERIFY
-applying VAULT_TLS_CA
 
 [ cluster-1 ]
-applying VAULT_SKIP_VERIFY
-applying VAULT_TLS_CA
+attempting intialization of cluster "cluster-1" with 1 shares and a threshold of 1
+applying VAULT_TLS_SKIP_VERIFY
 successfully initialized cluster-1 and wrote keys to cluster-1.json.
 ```
 
-**Tip:** You can also specify the used cluster be providing a environment variable named: `VOPS_CLUSTER`
-## Unsealing
+**Tip:** You can also specify the cluster by providing a environment variable named `VOPS_CLUSTER` or run the command for all cluster using `-A` or `--all-cluster`.
+
+## Unseal
+> unseal a vault cluster using the specified keyfile
 ```bash
-> vops unseal -c cluster-1    
-[ VOPS ]
+> vops unseal --cluster cluster-1
+[ Unseal ]
 using vops.yaml
 
 [ cluster-1 ]
-applying VAULT_SKIP_VERIFY
-applying VAULT_TLS_CA
+applying VAULT_TLS_SKIP_VERIFY
 using keyfile "cluster-1.json"
-unsealing node "http://127.0.0.1:8200"
-unsealing node "http://127.0.0.1:8200"
 unsealing node "http://127.0.0.1:8200"
 cluster "cluster-1" unsealed
 ```
 
-## Sealing
+## Seal
+> seal a cluster
 ```bash
-> vops seal -c cluster-1  
-[ VOPS ]
+> vops seal --cluster cluster-1
+[ Seal ]
 using vops.yaml
 
 [ cluster-1 ]
-applying VAULT_SKIP_VERIFY
-applying VAULT_TLS_CA
+applying VAULT_TLS_SKIP_VERIFY
 executed token exec command
 cluster "cluster-1" sealed
 ```
 
 ## Rekey
+tbd. 
+
+
+## Generate Root
+> generates a new root token
 ```bash
-> vops rekey -c cluster-1            
-[ VOPS ]
+> vops generate-root --cluster cluster-1
+[ Generate Root Token ]
 using vops.yaml
 
 [ cluster-1 ]
-applying VAULT_SKIP_VERIFY
-applying VAULT_TLS_CA
-using keyfile "cluster-1.json"
-rekeying successfully completed
-renamed keyfile "cluster-1.json" for cluster "cluster-1" to "cluster-1.json_20230210233133" (snapshots depend on the unseal/recovery keys from the moment the snapshot has been created. This way you always have the matching unseal/recovery keys ready.)
-```
-
-
-## Generate Root Token
-```bash
-> vops  generate-root -c cluster-1        
-[ VOPS ]
-using vops.yaml
-
-[ cluster-1 ]
-applying VAULT_SKIP_VERIFY
-applying VAULT_TLS_CA
+applying VAULT_TLS_SKIP_VERIFY
 generated on OTP for root token creation
 started root token generation process
 root token generation completed
-new root token: "hvs.byNOU9DVxCbvgatIMHAwXOKS"
-make sure to uvopspdate your token exec commands in your vops configfile if necessary.
+new root token: "hvs.dmhO9aVPT0aBB1G7nrj3UdDh" (make sure to update your token exec commands in your vops configfile if necessary.)
 ```
 
 ## Snapshots
 ### Snapshot save
 ```bash
-> vops snapshot save -c cluster-1
-[ VOPS ]
+> vops snapshot save --cluster cluster-1
+[ Snapshot Save ]
 using vops.yaml
 
 [ cluster-1 ]
-applying VAULT_SKIP_VERIFY
-applying VAULT_TLS_CA
+applying VAULT_TLS_SKIP_VERIFY
 executed token exec command
-created snapshot file "snapshots/20230210232954" for cluster "cluster-1"
+created snapshot file "cluster-1/20230216155514" for cluster "cluster-1"
 ```
 
+### Snapshot Restore
+tbd.
 ## Custom Commands
-You can define custom commands:
-
-```yml
-CustomCmds:
-  list-peers: 'vault operator raft list-peers'
-  status: 'vault status'
-
-Cluster:
-  - Name: cluster-1
-    Addr: "http://127.0.0.1:8200"
-    TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}"
-    Keys:
-      Path: "{{ .Name }}.json"
-      Shares: 1
-      Threshold: 1
-    SnapshotDirectory: "snapshots/"
-    Nodes:
-      - "{{ .Addr }}"
-    ExtraEnv:
-     VAULT_SKIP_VERIFY: true
-     VAULT_TLS_CA: "ok"
-```
-
-and run them for all cluster:
+You can run any defined custom commands:
 
 ```bash
-$> vops custom --list
+> vops custom --list
 [ Custom ]
-using ./assets/vops.yaml
+using vops.yaml
 
 [ Available Commands ]
 "list-peers": "vault operator raft list-peers"
@@ -220,13 +236,12 @@ using ./assets/vops.yaml
 
 run any available command with "vops custom -x <command name> -c <cluster-name>".
 
-$> vops custom -x custom -x status --all-cluster  
+> vops custom -x status --cluster --cluster-1
 [ Custom ]
-using ./assets/vops.yaml
+using vops.yaml
 
 [ cluster-1 ]
-applying VAULT_SKIP_VERIFY
-applying VAULT_TLS_CA
+applying VAULT_TLS_SKIP_VERIFY
 applying VAULT_ADDR
 applying VAULT_TOKEN
 token exec command successful
@@ -234,21 +249,20 @@ token exec command successful
 $> vault status
 Key                     Value
 ---                     -----
-...
-
-[ cluster-2 ]
-applying VAULT_SKIP_VERIFY
-applying VAULT_TLS_CA
-applying VAULT_ADDR
-applying VAULT_TOKEN
-token exec command successful
-
-$> vault status
-Key                     Value
----                     -----
-....
+Seal Type               shamir
+Initialized             true
+Sealed                  false
+Total Shares            1
+Threshold               1
+Version                 1.12.1
+Build Date              2022-10-27T12:32:05Z
+Storage Type            raft
+Cluster Name            vault-cluster-982e7d76
+Cluster ID              10939fbf-fdfd-04b3-e037-dd044ce38fa3
+HA Enabled              true
+HA Cluster              https://127.0.0.1:8201
+HA Mode                 active
+Active Since            2023-02-16T14:54:35.541380933Z
+Raft Committed Index    36
+Raft Applied Index      36
 ```
-
-# Global Flags
-* `--config` (`VOPS_CONFIG`) - `vops` configuration file (default: `vops.yaml`)
-* `--all-cluster` (`-A`) - perform the chosen operation for all defined clusters.
