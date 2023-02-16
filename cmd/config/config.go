@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewConfigCmd config command.
 func NewConfigCmd(cfg string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "config",
@@ -41,6 +42,9 @@ func newConfigExampleCmd() *cobra.Command {
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			exampleCfg := &config.Config{
+				CustomCmds: map[string]interface{}{
+					"list-peers": "vault operator raft list-peers",
+				},
 				Cluster: []config.Cluster{
 					{
 						Name:         "vault-dev",

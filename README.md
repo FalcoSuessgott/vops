@@ -4,7 +4,7 @@
 
 <img src="https://github.com/FalcoSuessgott/vops/actions/workflows/test.yml/badge.svg" alt="drawing"/>
 <img src="https://github.com/FalcoSuessgott/vops/actions/workflows/lint.yml/badge.svg" alt="drawing"/>
-<img src="https://codecov.io/gh/FalcoSuessgott/vops/branch/master/graph/badge.svg" alt="drawing"/>
+<img src="https://codecov.io/gh/FalcoSuessgott/vops/branch/main/graph/badge.svg" alt="drawing"/>
 <img src="https://img.shields.io/github/downloads/FalcoSuessgott/vops/total.svg" alt="drawing"/>
 <img src="https://img.shields.io/github/v/release/FalcoSuessgott/vops" alt="drawing"/>
 <img src="https://img.shields.io/docker/pulls/falcosuessgott/vops" alt="drawing"/>
@@ -27,6 +27,7 @@ I automate, develop and maintain a lot of Vault cluster for different clients. W
 * Rekey a Vault 
 * Generate a new root token
 * save and restore a Vault (raft storage required)
+* define custom commands then can be run for any cluster
 
 # Installation
 `vops` comes as `RPM`, `DEB`, `APK`, Container and CLI-tool:
@@ -180,6 +181,72 @@ applying VAULT_SKIP_VERIFY
 applying VAULT_TLS_CA
 executed token exec command
 created snapshot file "snapshots/20230210232954" for cluster "cluster-1"
+```
+
+## Custom Commands
+You can define custom commands:
+
+```yml
+CustomCmds:
+  list-peers: 'vault operator raft list-peers'
+  status: 'vault status'
+
+Cluster:
+  - Name: cluster-1
+    Addr: "http://127.0.0.1:8200"
+    TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}"
+    Keys:
+      Path: "{{ .Name }}.json"
+      Shares: 1
+      Threshold: 1
+    SnapshotDirectory: "snapshots/"
+    Nodes:
+      - "{{ .Addr }}"
+    ExtraEnv:
+     VAULT_SKIP_VERIFY: true
+     VAULT_TLS_CA: "ok"
+```
+
+and run them for all cluster:
+
+```bash
+$> vops custom --list
+[ Custom ]
+using ./assets/vops.yaml
+
+[ Available Commands ]
+"list-peers": "vault operator raft list-peers"
+"status": "vault status"
+
+run any available command with "vops custom -x <command name> -c <cluster-name>".
+
+$> vops custom -x custom -x status --all-cluster  
+[ Custom ]
+using ./assets/vops.yaml
+
+[ cluster-1 ]
+applying VAULT_SKIP_VERIFY
+applying VAULT_TLS_CA
+applying VAULT_ADDR
+applying VAULT_TOKEN
+token exec command successful
+
+$> vault status
+Key                     Value
+---                     -----
+...
+
+[ cluster-2 ]
+applying VAULT_SKIP_VERIFY
+applying VAULT_TLS_CA
+applying VAULT_ADDR
+applying VAULT_TOKEN
+token exec command successful
+
+$> vault status
+Key                     Value
+---                     -----
+....
 ```
 
 # Global Flags

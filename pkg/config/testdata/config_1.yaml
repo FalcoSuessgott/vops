@@ -13,3 +13,5 @@ Cluster:
         - vault-server-03
       ExtraEnv:
         VAULT_SKIP_VERIFY: true
+CustomCmds:
+  list-peers: "vault operator raft list-peers"

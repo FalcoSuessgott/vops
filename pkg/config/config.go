@@ -20,7 +20,8 @@ var (
 
 // Config holds the config file parameters.
 type Config struct {
-	Cluster []Cluster `json:"cluster" yaml:"Cluster,omitempty"`
+	Cluster    []Cluster              `json:"Cluster" yaml:"Cluster,omitempty"`
+	CustomCmds map[string]interface{} `json:"CustomCmds" yaml:"CustomCmds,omitempty"`
 }
 
 // ParseConfig reads and parses a vops config file.

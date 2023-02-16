@@ -18,7 +18,10 @@ func TestParseConfig(t *testing.T) {
 			name: "single cluster",
 			path: "testdata/config_1.yaml",
 			expCfg: &Config{
-				[]Cluster{
+				CustomCmds: map[string]interface{}{
+					"list-peers": "vault operator raft list-peers",
+				},
+				Cluster: []Cluster{
 					{
 						Name:         "cluster-1",
 						Addr:         "https://test.vault.de",
@@ -45,7 +48,7 @@ func TestParseConfig(t *testing.T) {
 			name: "render config",
 			path: "testdata/config_2.yaml",
 			expCfg: &Config{
-				[]Cluster{
+				Cluster: []Cluster{
 					{
 						Name:         "cluster-1",
 						Addr:         "https://test.vault.de",

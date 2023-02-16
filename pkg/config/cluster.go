@@ -61,8 +61,8 @@ func (c *Cluster) GetKeyFile() (*api.InitResponse, error) {
 }
 
 // ApplyEnvironmentVariables applies the environment variables specfied for a single vault.
-func (c *Cluster) ApplyEnvironmentVariables() error {
-	for k, v := range c.ExtraEnv {
+func (c *Cluster) ApplyEnvironmentVariables(envs map[string]interface{}) error {
+	for k, v := range envs {
 		if err := os.Setenv(k, fmt.Sprintf("%v", v)); err != nil {
 			return err
 		}
