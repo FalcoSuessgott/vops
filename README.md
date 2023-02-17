@@ -31,6 +31,7 @@ I automate, develop and maintain a lot of Vault cluster for different clients. W
 * save and restore a Vault (raft storage required) Snapshot
 * open the UI in your default browser
 * perform a vault login to a specified cluster in order to continue working with the vault CLI
+* copy the token from a the token exec command to your clipboard buffer for Vault UI login
 * define custom commands then can be run for any cluster
 
 # Installation
@@ -335,4 +336,22 @@ token_renewable      false
 token_policies       ["root"]
 identity_policies    []
 policies             ["root"]
+```
+
+## Token
+> copy the token from the token exec command to your clipboard buffer
+
+```bash
+vops token --cluster cluster-1
+
+[ Token ]
+using ./assets/vops.yaml
+
+[ cluster-1 ]
+copying token for cluster cluster-1
+applying VAULT_SKIP_VERIFY
+applying VAULT_TLS_CA
+applying VAULT_ADDR
+applying VAULT_TOKEN
+token for cluster cluster-1 copied to clipboard buffer.
 ```

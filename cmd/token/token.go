@@ -1,36 +1,35 @@
-package login
+package token
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
-	"github.com/FalcoSuessgott/vops/pkg/exec"
+	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
 )
 
-type loginOptions struct {
+type tokenOptions struct {
 	Cluster string
 }
 
-func newDefaultLoginOptions() *loginOptions {
-	return &loginOptions{}
+func newDefaultTokenOptions() *tokenOptions {
+	return &tokenOptions{}
 }
 
-// NewLoginCmd login command.
-func NewLoginCmd(cfg string) *cobra.Command {
-	o := newDefaultLoginOptions()
+// NewTokenCmd login command.
+func NewTokenCmd(cfg string) *cobra.Command {
+	o := newDefaultTokenOptions()
 
 	cmd := &cobra.Command{
-		Use:           "login",
-		Short:         "perform a vault login command for the specified cluster",
+		Use:           "token",
+		Short:         "copy the token from the token exec command to your clipboard buffer",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return config.ValidateConfig(cfg)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("[ Login ]")
+			fmt.Println("[ Token ]")
 			fmt.Printf("using %s\n", cfg)
 
 			config, err := config.ParseConfig(cfg)
@@ -44,7 +43,7 @@ func NewLoginCmd(cfg string) *cobra.Command {
 			}
 
 			fmt.Printf("\n[ %s ]\n", cluster.Name)
-			fmt.Printf("performing a vault login to %s\n", cluster.Name)
+			fmt.Printf("copying token for cluster %s\n", cluster.Name)
 
 			cluster.ExtraEnv["VAULT_ADDR"] = cluster.Addr
 			cluster.ExtraEnv["VAULT_TOKEN"] = cluster.Token
@@ -57,19 +56,11 @@ func NewLoginCmd(cfg string) *cobra.Command {
 				return err
 			}
 
-			loginCmd := fmt.Sprintf("vault login %s", cluster.Token)
-
-			fmt.Println("executed token exec command")
-			fmt.Println()
-			fmt.Printf("$> vault login $(%s)", cluster.TokenExecCmd)
-			fmt.Println()
-
-			out, err := exec.Run(strings.Split(loginCmd, " "))
-			if err != nil {
+			if err := clipboard.WriteAll(cluster.Token); err != nil {
 				return err
 			}
 
-			fmt.Println(string(out))
+			fmt.Printf("token for cluster %s copied to clipboard buffer.\n", cluster.Name)
 
 			return nil
 		},
