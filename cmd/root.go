@@ -13,6 +13,7 @@ import (
 	"github.com/FalcoSuessgott/vops/cmd/rekey"
 	"github.com/FalcoSuessgott/vops/cmd/seal"
 	"github.com/FalcoSuessgott/vops/cmd/snapshot"
+	"github.com/FalcoSuessgott/vops/cmd/ui"
 	"github.com/FalcoSuessgott/vops/cmd/unseal"
 	"github.com/FalcoSuessgott/vops/cmd/version"
 	"github.com/spf13/cobra"
@@ -53,6 +54,7 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		custom.NewCustomCmd(cfgFile),
 		config.NewConfigCmd(cfgFile),
 		manpage.NewManCmd().Cmd,
+		ui.NewUICmd(cfgFile),
 	)
 
 	return cmd

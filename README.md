@@ -28,7 +28,8 @@ I automate, develop and maintain a lot of Vault cluster for different clients. W
 * Seal & Unseal a Vault 
 * Rekey a Vault 
 * Generate a new root token
-* save and restore a Vault (raft storage required)
+* save and restore a Vault (raft storage required) Snapshot
+* open the UI in your default browser
 * define custom commands then can be run for any cluster
 
 # Installation
