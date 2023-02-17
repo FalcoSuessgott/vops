@@ -28,7 +28,10 @@ I automate, develop and maintain a lot of Vault cluster for different clients. W
 * Seal & Unseal a Vault 
 * Rekey a Vault 
 * Generate a new root token
-* save and restore a Vault (raft storage required)
+* save and restore a Vault (raft storage required) Snapshot
+* open the UI in your default browser
+* perform a vault login to a specified cluster in order to continue working with the vault CLI
+* copy the token from a the token exec command to your clipboard buffer for Vault UI login
 * define custom commands then can be run for any cluster
 
 # Installation
@@ -148,6 +151,27 @@ vops config example > vops.yaml
 cat vops.yaml
 ```
 
+created the folloing `vops.yaml`:
+
+```yaml
+Cluster:
+  - Name: cluster-1
+    Addr: http://127.0.0.1:8200
+    TokenExecCmd: jq -r '.root_token' {{ .Keys.Path }}
+    Keys:
+      Path: '{{ .Name }}.json'
+      Shares: 1
+      Threshold: 1
+    SnapshotDirectory: '{{ .Name }}/'
+    Nodes:
+      - '{{ .Addr }}'
+    ExtraEnv:
+      VAULT_TLS_SKIP_VERIFY: true
+CustomCmds:
+  list-peers: vault operator raft list-peers
+  status: vault status
+```
+
 ## Initialize
 > initialize vault cluster 
 ```bash
@@ -224,6 +248,7 @@ created snapshot file "cluster-1/20230216155514" for cluster "cluster-1"
 
 ### Snapshot Restore
 tbd.
+
 ## Custom Commands
 You can run any defined custom commands:
 
@@ -267,4 +292,66 @@ HA Mode                 active
 Active Since            2023-02-16T14:54:35.541380933Z
 Raft Committed Index    36
 Raft Applied Index      36
+```
+
+## UI
+> opens the Vault Address in your default browser
+
+```bash
+vops ui --cluster cluster-1
+[ UI ]
+using ./assets/vops.yaml
+
+[ cluster-1 ]
+opening http://127.0.0.1:8200
+```
+
+## Login 
+> performs a vault token login command in order to work with the vault CLI
+
+```bash
+vops login --cluster cluster-1
+[ Login ]
+using ./assets/vops.yaml
+
+[ cluster-1 ]
+performing a vault login to http://127.0.0.1:8200
+applying VAULT_SKIP_VERIFY
+applying VAULT_TLS_CA
+applying VAULT_ADDR
+applying VAULT_TOKEN
+executed token exec command
+
+$> vault login $(jq -r '.root_token' cluster-1.json)
+Success! You are now authenticated. The token information displayed below
+is already stored in the token helper. You do NOT need to run "vault login"
+again. Future Vault requests will automatically use this token.
+
+Key                  Value
+---                  -----
+token                hvs.5aYsklTzIYR26iWRttqFoCm1
+token_accessor       R7l5fidrohVB5Tc4pXBcUtoO
+token_duration       ∞
+token_renewable      false
+token_policies       ["root"]
+identity_policies    []
+policies             ["root"]
+```
+
+## Token
+> copy the token from the token exec command to your clipboard buffer
+
+```bash
+vops token --cluster cluster-1
+
+[ Token ]
+using ./assets/vops.yaml
+
+[ cluster-1 ]
+copying token for cluster cluster-1
+applying VAULT_SKIP_VERIFY
+applying VAULT_TLS_CA
+applying VAULT_ADDR
+applying VAULT_TOKEN
+token for cluster cluster-1 copied to clipboard buffer.
 ```

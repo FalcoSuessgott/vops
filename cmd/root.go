@@ -9,10 +9,13 @@ import (
 	"github.com/FalcoSuessgott/vops/cmd/custom"
 	"github.com/FalcoSuessgott/vops/cmd/generateroot"
 	"github.com/FalcoSuessgott/vops/cmd/initialize"
+	"github.com/FalcoSuessgott/vops/cmd/login"
 	"github.com/FalcoSuessgott/vops/cmd/manpage"
 	"github.com/FalcoSuessgott/vops/cmd/rekey"
 	"github.com/FalcoSuessgott/vops/cmd/seal"
 	"github.com/FalcoSuessgott/vops/cmd/snapshot"
+	"github.com/FalcoSuessgott/vops/cmd/token"
+	"github.com/FalcoSuessgott/vops/cmd/ui"
 	"github.com/FalcoSuessgott/vops/cmd/unseal"
 	"github.com/FalcoSuessgott/vops/cmd/version"
 	"github.com/spf13/cobra"
@@ -48,11 +51,13 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		rekey.NewRekeyCmd(cfgFile),
 		generateroot.NewGenerateRootCmd(cfgFile),
 		version.NewVersionCmd(v),
-		config.NewConfigCmd(cfgFile),
 		snapshot.NewSnapshotCmd(cfgFile),
 		custom.NewCustomCmd(cfgFile),
 		config.NewConfigCmd(cfgFile),
 		manpage.NewManCmd().Cmd,
+		ui.NewUICmd(cfgFile),
+		login.NewLoginCmd(cfgFile),
+		token.NewTokenCmd(cfgFile),
 	)
 
 	return cmd

@@ -3,6 +3,7 @@ module github.com/FalcoSuessgott/vops
 go 1.18
 
 require (
+	github.com/atotto/clipboard v0.1.4
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/hashicorp/vault/api v1.9.0
 	github.com/hashicorp/vault/sdk v0.6.1-0.20221010215534-6545e24b6023

@@ -27,7 +27,7 @@ func NewCustomCmd(cfg string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "custom",
 		Aliases:       []string{"c"},
-		Short:         "run a custom command for a single or al vault cluster",
+		Short:         "run any custom command for a single or al vault cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
