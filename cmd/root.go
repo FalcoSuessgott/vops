@@ -9,6 +9,7 @@ import (
 	"github.com/FalcoSuessgott/vops/cmd/custom"
 	"github.com/FalcoSuessgott/vops/cmd/generateroot"
 	"github.com/FalcoSuessgott/vops/cmd/initialize"
+	"github.com/FalcoSuessgott/vops/cmd/login"
 	"github.com/FalcoSuessgott/vops/cmd/manpage"
 	"github.com/FalcoSuessgott/vops/cmd/rekey"
 	"github.com/FalcoSuessgott/vops/cmd/seal"
@@ -55,6 +56,7 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		config.NewConfigCmd(cfgFile),
 		manpage.NewManCmd().Cmd,
 		ui.NewUICmd(cfgFile),
+		login.NewLoginCmd(cfgFile),
 	)
 
 	return cmd

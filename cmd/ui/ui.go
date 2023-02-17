@@ -23,7 +23,7 @@ func NewUICmd(cfg string) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:           "ui",
-		Short:         "ui",
+		Short:         "open the specified vault cluster address in your browser",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
