@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
+	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/FalcoSuessgott/vops/pkg/fs"
 	"github.com/FalcoSuessgott/vops/pkg/utils"
 	"github.com/FalcoSuessgott/vops/pkg/vault"
@@ -18,35 +19,34 @@ type rekeyOptions struct {
 	AllCluster bool
 }
 
-func newDefaultRekeyOptions() *rekeyOptions {
-	return &rekeyOptions{}
-}
-
 // NewRekeyCmd vops rekey command.
 func NewRekeyCmd(cfg string) *cobra.Command {
-	o := newDefaultRekeyOptions()
+	var c *config.Config
+
+	o := &rekeyOptions{}
 
 	cmd := &cobra.Command{
 		Use:           "rekey",
 		Aliases:       []string{"rk"},
-		Short:         "rekey a single or all vault cluster",
+		Short:         "rekey a cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return config.ValidateConfig(cfg)
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("[ Rekeying ]")
+			var err error
+
+			fmt.Println("[ Rekey ]")
 			fmt.Printf("using %s\n", cfg)
 
-			config, err := config.ParseConfig(cfg)
+			c, err = config.ParseConfig(cfg)
 			if err != nil {
 				return err
 			}
 
-			// AllCluster
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if o.AllCluster {
-				for _, cluster := range config.Cluster {
+				for _, cluster := range c.Cluster {
 					if err := o.rekeyCluster(cluster); err != nil {
 						return err
 					}
@@ -55,8 +55,7 @@ func NewRekeyCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			// Single Node
-			cluster, err := config.GetCluster(o.Cluster)
+			cluster, err := c.GetCluster(o.Cluster)
 			if err != nil {
 				return err
 			}
@@ -69,10 +68,11 @@ func NewRekeyCmd(cfg string) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&o.Cluster, "cluster", "c", o.Cluster, "name of the vault cluster to initialize")
+	flags.AllClusterFlag(cmd, o.AllCluster)
+	flags.ClusterFlag(cmd, o.Cluster)
+
 	cmd.Flags().IntVarP(&o.Shares, "shares", "s", o.Shares, "Number of keyshares")
 	cmd.Flags().IntVarP(&o.Threshold, "threshold", "t", o.Threshold, "Number of required keys to unseal vault")
-	cmd.Flags().BoolVarP(&o.AllCluster, "all-cluster", "A", o.AllCluster, "unseal all cluster defined in the vops configuration file")
 
 	return cmd
 }
@@ -88,6 +88,11 @@ func (o *rekeyOptions) rekeyCluster(cluster config.Cluster) error {
 	}
 
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
+	fmt.Printf("performing a rekey for %s with %d shares and a threshold of %d\n", cluster.Name, cluster.Keys.Shares, cluster.Keys.Threshold)
+
+	if cluster.Keys.Path == "" {
+		return fmt.Errorf("a key file containing unseal/recovery keys for that cluster is required")
+	}
 
 	if err := cluster.ApplyEnvironmentVariables(cluster.ExtraEnv); err != nil {
 		return err

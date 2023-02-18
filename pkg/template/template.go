@@ -8,12 +8,9 @@ import (
 	"github.com/FalcoSuessgott/vops/pkg/utils"
 )
 
-// String renders byte array input with the given data.
+// Render renders byte array input with the given data.
 func Render(content []byte, input interface{}) (bytes.Buffer, error) {
 	var buf bytes.Buffer
-
-	// fmt.Println(string(content))
-	// fmt.Printf("%#v\n", input)
 
 	tpl, err := template.New("template").Option("missingkey=error").Parse(string(content))
 	if err != nil {
@@ -24,7 +21,7 @@ func Render(content []byte, input interface{}) (bytes.Buffer, error) {
 		return buf, err
 	}
 
-	if len(ListTemplFields(tpl)) > 0 {
+	if len(listTemplFields(tpl)) > 0 {
 		var i interface{}
 
 		utils.FromYAML(buf.Bytes(), &i)
@@ -35,7 +32,7 @@ func Render(content []byte, input interface{}) (bytes.Buffer, error) {
 	return buf, nil
 }
 
-func ListTemplFields(t *template.Template) []string {
+func listTemplFields(t *template.Template) []string {
 	return listNodeFields(t.Tree.Root, nil)
 }
 

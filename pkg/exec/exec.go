@@ -18,7 +18,7 @@ func Run(cmd []string) ([]byte, error) {
 	c.Stderr = &stderr
 
 	if c.Run() != nil {
-		return nil, fmt.Errorf(stderr.String())
+		return nil, fmt.Errorf("error while running command: %v", stderr.String())
 	}
 
 	return stdout.Bytes(), nil

@@ -10,7 +10,9 @@ import (
 )
 
 const (
-	clusterEnvVar = "VOPS_CLUSTER"
+	clusterEnvVar       = "VOPS_CLUSTER"
+	defaultKeyShares    = 5
+	defaultKeyThreshold = 5
 )
 
 var (
@@ -37,6 +39,26 @@ func ParseConfig(path string) (*Config, error) {
 	}
 
 	for i, c := range cfg.Cluster {
+		if c.Name == "" {
+			return nil, fmt.Errorf("a cluster name is required")
+		}
+
+		if c.Addr == "" {
+			return nil, fmt.Errorf("a cluster address is required")
+		}
+
+		if c.Keys == nil {
+			return nil, fmt.Errorf("a keyfile is required")
+		}
+
+		if c.Keys.Shares == 0 {
+			c.Keys.Shares = defaultKeyShares
+		}
+
+		if c.Keys.Threshold == 0 {
+			c.Keys.Threshold = defaultKeyThreshold
+		}
+
 		c.Env = utils.GetEnvs()
 
 		renderedCluster, err := c.RenderConfig()
@@ -48,15 +70,6 @@ func ParseConfig(path string) (*Config, error) {
 	}
 
 	return cfg, nil
-}
-
-// ValidateConfig validates config.
-func ValidateConfig(path string) error {
-	cfg := &Config{}
-
-	utils.FromYAML(fs.ReadFile(path), &cfg)
-
-	return nil
 }
 
 // GetCluster returns the vault struct matching the name.

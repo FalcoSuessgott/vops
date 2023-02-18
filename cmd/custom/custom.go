@@ -6,6 +6,7 @@ import (
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
 	"github.com/FalcoSuessgott/vops/pkg/exec"
+	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/spf13/cobra"
 )
 
@@ -16,35 +17,39 @@ type customOptions struct {
 	List       bool
 }
 
-func newCustomOptions() *customOptions {
-	return &customOptions{}
-}
-
-// NewCustomCmd vops init command.
+// NewCustomCmd vops custom command.
 func NewCustomCmd(cfg string) *cobra.Command {
-	o := newCustomOptions()
+	var c *config.Config
+
+	o := &customOptions{}
 
 	cmd := &cobra.Command{
 		Use:           "custom",
 		Aliases:       []string{"c"},
-		Short:         "run any custom command for a single or al vault cluster",
+		Short:         "run any custom command for a vault cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return config.ValidateConfig(cfg)
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("[ Custom ]")
+			var err error
+
+			fmt.Println("[ Custom Command ]")
 			fmt.Printf("using %s\n", cfg)
 
-			config, err := config.ParseConfig(cfg)
+			c, err = config.ParseConfig(cfg)
 			if err != nil {
 				return err
 			}
 
+			if len(c.CustomCmds) == 0 {
+				return fmt.Errorf("a least one custom command is required")
+			}
+
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if o.List {
 				fmt.Println("\n[ Available Commands ]")
-				for name, cmd := range config.CustomCmds {
+				for name, cmd := range c.CustomCmds {
 					fmt.Printf("\"%s\": \"%s\"\n", name, cmd)
 				}
 
@@ -54,8 +59,8 @@ func NewCustomCmd(cfg string) *cobra.Command {
 			}
 
 			if o.AllCluster {
-				for _, cluster := range config.Cluster {
-					if err := o.runCustomCommand(cluster, config.CustomCmds); err != nil {
+				for _, cluster := range c.Cluster {
+					if err := o.runCustomCommand(cluster, c.CustomCmds); err != nil {
 						return err
 					}
 				}
@@ -63,12 +68,12 @@ func NewCustomCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			cluster, err := config.GetCluster(o.Cluster)
+			cluster, err := c.GetCluster(o.Cluster)
 			if err != nil {
 				return err
 			}
 
-			if err := o.runCustomCommand(*cluster, config.CustomCmds); err != nil {
+			if err := o.runCustomCommand(*cluster, c.CustomCmds); err != nil {
 				return err
 			}
 
@@ -76,10 +81,11 @@ func NewCustomCmd(cfg string) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVarP(&o.List, "list", "l", o.List, "list available custom commands")
-	cmd.Flags().StringVarP(&o.Command, "command", "x", o.Cluster, "the name of command defined in vops.yaml to run")
-	cmd.Flags().StringVarP(&o.Cluster, "cluster", "c", o.Cluster, "name of a cluster specified in the vops configuration file")
-	cmd.Flags().BoolVarP(&o.AllCluster, "all-cluster", "A", o.AllCluster, "initialize all cluster defined in the vops configuration file")
+	flags.AllClusterFlag(cmd, o.AllCluster)
+	flags.ClusterFlag(cmd, o.Cluster)
+
+	cmd.Flags().BoolVarP(&o.List, "list", "l", o.List, "list all available custom commands")
+	cmd.Flags().StringVarP(&o.Command, "command", "x", o.Cluster, "the name of command to run")
 
 	return cmd
 }

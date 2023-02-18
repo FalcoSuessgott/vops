@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
+	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
 )
@@ -12,13 +13,11 @@ type tokenOptions struct {
 	Cluster string
 }
 
-func newDefaultTokenOptions() *tokenOptions {
-	return &tokenOptions{}
-}
-
-// NewTokenCmd login command.
+// NewTokenCmd token command.
 func NewTokenCmd(cfg string) *cobra.Command {
-	o := newDefaultTokenOptions()
+	var c *config.Config
+
+	o := &tokenOptions{}
 
 	cmd := &cobra.Command{
 		Use:           "token",
@@ -26,24 +25,30 @@ func NewTokenCmd(cfg string) *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return config.ValidateConfig(cfg)
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("[ Token ]")
+			var err error
+
+			fmt.Println("[ Copy Token ]")
 			fmt.Printf("using %s\n", cfg)
 
-			config, err := config.ParseConfig(cfg)
+			c, err = config.ParseConfig(cfg)
 			if err != nil {
 				return err
 			}
 
-			cluster, err := config.GetCluster(o.Cluster)
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cluster, err := c.GetCluster(o.Cluster)
 			if err != nil {
 				return err
 			}
 
 			fmt.Printf("\n[ %s ]\n", cluster.Name)
 			fmt.Printf("copying token for cluster %s\n", cluster.Name)
+
+			if cluster.TokenExecCmd == "" {
+				return fmt.Errorf("no token exec command defined")
+			}
 
 			cluster.ExtraEnv["VAULT_ADDR"] = cluster.Addr
 			cluster.ExtraEnv["VAULT_TOKEN"] = cluster.Token
@@ -65,6 +70,8 @@ func NewTokenCmd(cfg string) *cobra.Command {
 			return nil
 		},
 	}
+
+	flags.ClusterFlag(cmd, o.Cluster)
 
 	return cmd
 }

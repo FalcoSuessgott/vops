@@ -41,9 +41,8 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", cfgFile, "path to config file")
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", cfgFile, "path to the vops configfile")
 
-	// sub commands
 	cmd.AddCommand(
 		initialize.NewInitCmd(cfgFile),
 		unseal.NewUnsealCmd(cfgFile),

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
+	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/FalcoSuessgott/vops/pkg/vault"
 	"github.com/spf13/cobra"
 )
@@ -13,37 +14,34 @@ type sealOptions struct {
 	AllCluster bool
 }
 
-func newDefaultsealOptions() *sealOptions {
-	return &sealOptions{
-		AllCluster: true,
-	}
-}
-
 // NewSealCmd vops seal command.
 func NewSealCmd(cfg string) *cobra.Command {
-	o := newDefaultsealOptions()
+	var c *config.Config
+
+	o := &sealOptions{}
 
 	cmd := &cobra.Command{
 		Use:           "seal",
 		Aliases:       []string{"s"},
-		Short:         "seals a single or all cluster",
+		Short:         "seal a cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return config.ValidateConfig(cfg)
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+
 			fmt.Println("[ Seal ]")
 			fmt.Printf("using %s\n", cfg)
 
-			config, err := config.ParseConfig(cfg)
+			c, err = config.ParseConfig(cfg)
 			if err != nil {
 				return err
 			}
 
-			// All Cluster
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if o.AllCluster {
-				for _, cluster := range config.Cluster {
+				for _, cluster := range c.Cluster {
 					if err := sealCluster(cluster); err != nil {
 						return err
 					}
@@ -52,8 +50,7 @@ func NewSealCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			// Single Node
-			cluster, err := config.GetCluster(o.Cluster)
+			cluster, err := c.GetCluster(o.Cluster)
 			if err != nil {
 				return err
 			}
@@ -68,14 +65,18 @@ func NewSealCmd(cfg string) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&o.Cluster, "cluster", "c", o.Cluster, "name of the vault cluster to initialize")
-	cmd.Flags().BoolVarP(&o.AllCluster, "all-cluster", "A", o.AllCluster, "unseal all cluster defined in the vops configuration file")
+	flags.AllClusterFlag(cmd, o.AllCluster)
+	flags.ClusterFlag(cmd, o.Cluster)
 
 	return cmd
 }
 
 func sealCluster(cluster config.Cluster) error {
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
+
+	if cluster.TokenExecCmd == "" {
+		return fmt.Errorf("no token exec command defined")
+	}
 
 	if err := cluster.ApplyEnvironmentVariables(cluster.ExtraEnv); err != nil {
 		return err
