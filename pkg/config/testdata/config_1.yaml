@@ -1,7 +1,7 @@
 Cluster:
     - Name: cluster-1
       Addr: https://test.vault.de
-      TokenExecCmd: vault login 
+      TokenExecCmd: vault login
       Keys:
         Path: file.json
         Shares: 5

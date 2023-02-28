@@ -3,7 +3,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -97,26 +96,30 @@ func (c *Cluster) RenderConfig() (*Cluster, error) {
 }
 
 func (c Cluster) String() string {
-	if err := c.RunTokenExecCommand(); err != nil {
-		log.Fatalf("error while executing token command: %v", err)
-	}
+	policies := []string{}
 
-	client, err := vault.NewTokenClient(c.Addr, c.Token)
-	if err != nil {
-		log.Fatalf("error while executing token command: %v", err)
-	}
-
-	policies, err := client.TokenLookup()
-	if err != nil {
-		log.Fatalf("error while executing token command: %v", err)
+	if err := c.RunTokenExecCommand(); err == nil {
+		client, err := vault.NewTokenClient(c.Addr, c.Token)
+		if err == nil {
+			pols, err := client.TokenLookup()
+			if err == nil {
+				policies = append(policies, fmt.Sprintf("%v", pols))
+			}
+		}
 	}
 
 	return fmt.Sprintf(
-		"%s\t%s\t%s\t%s\t[%s]\t{Path: %s, Shares: %d, Threshold: %d}\t%s",
+		"Name:\t%s\n"+
+			"Address:\t%s\n"+
+			"TokenExecCmd:\t%s\n"+
+			"TokenExecCmd Policies:\t%s\n"+
+			"Nodes:\t[%s]\n"+
+			"Key Config:\t{Path: %s, Shares: %d, Threshold: %d}\n"+
+			"Snapshot Directory:\t%s\n",
 		c.Name,
 		c.Addr,
 		c.TokenExecCmd,
-		policies,
+		strings.Join(policies, ","),
 		strings.Join(c.Nodes, ","),
 		c.Keys.Path,
 		c.Keys.Shares,

@@ -172,6 +172,23 @@ CustomCmds:
   status: vault status
 ```
 
+## List Cluster
+> lists all defined clusters and validates their settings, performs a vault login
+```bash
+$> vops config validate      
+[ Validate ]
+using ./assets/vops.yaml
+
+Name:                   cluster-1
+Address:                http://127.0.0.1:8200
+TokenExecCmd:           jq -r '.root_token' cluster-1.json
+TokenExecCmd Policies:  [root]
+Nodes:                  [http://127.0.0.1:8200]
+Key Config:             {Path: cluster-1.json, Shares: 5, Threshold: 5}
+Snapshot Directory:     snapshots/
+```
+
+
 ## Initialize
 > initialize vault cluster 
 ```bash

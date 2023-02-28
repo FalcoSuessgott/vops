@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
+	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/FalcoSuessgott/vops/pkg/vault"
 	"github.com/hashicorp/vault/api"
 	"github.com/spf13/cobra"
@@ -14,34 +15,34 @@ type generateRootOptions struct {
 	AllCluster bool
 }
 
-func newDefaultGenerateRootOptions() *generateRootOptions {
-	return &generateRootOptions{}
-}
-
-// NewGenerateRootCmd vops rekey command.
+// NewGenerateRootCmd vops generate root command.
 func NewGenerateRootCmd(cfg string) *cobra.Command {
-	o := newDefaultGenerateRootOptions()
+	var c *config.Config
+
+	o := &generateRootOptions{}
 
 	cmd := &cobra.Command{
 		Use:           "generate-root",
 		Aliases:       []string{"gr"},
-		Short:         "generates a new root token for a single or all cluster",
+		Short:         "generate a new root token for a vault cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return config.ValidateConfig(cfg)
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+
 			fmt.Println("[ Generate Root Token ]")
 			fmt.Printf("using %s\n", cfg)
 
-			config, err := config.ParseConfig(cfg)
+			c, err = config.ParseConfig(cfg)
 			if err != nil {
 				return err
 			}
 
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if o.AllCluster {
-				for _, cluster := range config.Cluster {
+				for _, cluster := range c.Cluster {
 					if err := generateRoot(cluster); err != nil {
 						return err
 					}
@@ -50,7 +51,7 @@ func NewGenerateRootCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			cluster, err := config.GetCluster(o.Cluster)
+			cluster, err := c.GetCluster(o.Cluster)
 			if err != nil {
 				return err
 			}
@@ -63,16 +64,21 @@ func NewGenerateRootCmd(cfg string) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&o.Cluster, "cluster", "c", o.Cluster, "name of the vault cluster to initialize")
-	cmd.Flags().BoolVarP(&o.AllCluster, "all-cluster", "A", o.AllCluster, "initialize all cluster defined in the vops configuration file")
+	flags.AllClusterFlag(cmd, o.AllCluster)
+	flags.ClusterFlag(cmd, o.Cluster)
 
 	return cmd
 }
 
+//nolint: cyclop
 func generateRoot(cluster config.Cluster) error {
 	var token *api.GenerateRootStatusResponse
 
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
+
+	if cluster.Keys.Path == "" {
+		return fmt.Errorf("a key file containing unseal/recovery keys for that cluster is required")
+	}
 
 	if err := cluster.ApplyEnvironmentVariables(cluster.ExtraEnv); err != nil {
 		return err

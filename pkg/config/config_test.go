@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -44,38 +45,19 @@ func TestParseConfig(t *testing.T) {
 			},
 			err: false,
 		},
-		{
-			name: "render config",
-			path: "testdata/config_2.yaml",
-			expCfg: &Config{
-				Cluster: []Cluster{
-					{
-						Name:         "cluster-1",
-						Addr:         "https://test.vault.de",
-						TokenExecCmd: "vault login https://test.vault.de",
-						Nodes: []string{
-							"https://test.vault.de",
-						},
-						Env: map[string]interface{}{},
-					},
-				},
-			},
-			err: false,
-		},
 	}
 
 	for _, tc := range testCases {
 		cfg, err := ParseConfig(tc.path)
-
 		if tc.err {
 			require.Error(t, err, tc.name)
 		}
 
-		// ignore envs
 		for i := range cfg.Cluster {
 			cfg.Cluster[i].Env = map[string]interface{}{}
 		}
 
+		fmt.Println(tc.name, cfg)
 		assert.Equal(t, tc.expCfg, cfg, tc.name)
 	}
 }

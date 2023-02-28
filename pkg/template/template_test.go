@@ -69,7 +69,7 @@ func TestListTemplFields(t *testing.T) {
 		t.Fail()
 	}
 
-	res := ListTemplFields(tpl)
+	res := listTemplFields(tpl)
 
 	assert.Equal(t, exp, len(res))
 }

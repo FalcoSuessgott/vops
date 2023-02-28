@@ -17,7 +17,7 @@ func (v *Vault) SnapshotBackup() (*bytes.Buffer, error) {
 	return &writer, nil
 }
 
-// SnapshotBackup restores a snapshot.
+// SnapshotRestore restores a snapshot.
 func (v *Vault) SnapshotRestore(reader io.Reader, force bool) error {
 	err := v.Client.Sys().RaftSnapshotRestore(reader, force)
 	if err != nil {

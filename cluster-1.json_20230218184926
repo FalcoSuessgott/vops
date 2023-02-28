@@ -1,0 +1,19 @@
+{
+  "keys": [
+    "caebe58259f33a37c23887dc681e75982a7ceee587fd559691c7bb119949fd53ba",
+    "7e6165fee682c3557ad7b063ef2d8da0bdbc8367c0818396f71ccb006ef673b98f",
+    "bf3663e2c320de85339a4c30def85b37f61eb69c16b2a94dfdabb1f049c52ffd58",
+    "67b6ebf50d8ff418d441b04b1a4238e50a9d5be93bc5f2a7f8e3f60b4f78f388e5",
+    "1394e3c20f8601d64d5c8a3b7c7594931fde3eaa050630e46b90664aef1290b2db"
+  ],
+  "keys_base64": [
+    "yuvlglnzOjfCOIfcaB51mCp87uWH/VWWkce7EZlJ/VO6",
+    "fmFl/uaCw1V617Bj7y2NoL28g2fAgYOW9xzLAG72c7mP",
+    "vzZj4sMg3oUzmkww3vhbN/YetpwWsqlN/aux8EnFL/1Y",
+    "Z7br9Q2P9BjUQbBLGkI45QqdW+k7xfKn+OP2C09484jl",
+    "E5Tjwg+GAdZNXIo7fHWUkx/ePqoFBjDka5BmSu8SkLLb"
+  ],
+  "recovery_keys": null,
+  "recovery_keys_base64": null,
+  "root_token": "hvs.X6y4u5cFtRfJK5uBbL7cliGR"
+}

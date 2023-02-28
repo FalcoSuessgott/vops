@@ -15,12 +15,9 @@ func NewConfigCmd(cfg string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "config",
 		Aliases:       []string{"c", "cfg"},
-		Short:         "config",
+		Short:         "validate the vops configuration file",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			return config.ValidateConfig(cfg)
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -77,23 +74,34 @@ func newConfigExampleCmd() *cobra.Command {
 }
 
 func newConfigValidateCmd(cfg string) *cobra.Command {
+	var c *config.Config
+
 	cmd := &cobra.Command{
 		Use:           "validate",
 		Aliases:       []string{"v", "val"},
 		Short:         "validates a vops configuration file",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			config, err := config.ParseConfig(cfg)
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+
+			fmt.Println("[ Validate ]")
+			fmt.Printf("using %s\n", cfg)
+
+			c, err = config.ParseConfig(cfg)
 			if err != nil {
 				return err
 			}
 
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Println()
+
 			w := new(tabwriter.Writer)
 			w.Init(os.Stdout, 0, 8, 2, '\t', tabwriter.TabIndent)
-			fmt.Fprintln(w, "Name\tAddr\tTokenExecCmd\tToken Policies\tNodes\tKey\tSnapshotDir")
 
-			for _, cluster := range config.Cluster {
+			for _, cluster := range c.Cluster {
 				fmt.Fprintln(w, cluster)
 			}
 
