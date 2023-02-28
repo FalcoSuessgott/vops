@@ -1,8 +1,78 @@
 <div align="center">
-
 <h2> A HashiCorp Vault Cluster Management tool </h2>
+</div>
+<table>
+<tr>
+<td> Usage </td> <td> vops config </td>
+</tr>
+<tr>
+<td>
 
-<img src="assets/demo.gif" alt="drawing"/>
+```bash
+# configure
+VOPS_CONFIG="./vops.yaml"
+
+# initialize
+vops init --cluster vault-dev
+
+# list cluster
+vops config validate
+
+# unseal
+vops unseal -c vault-dev
+VOPS_CLUSTER=vault-dev
+
+# seal
+vops seal
+
+# generate root token
+vops generate-root
+
+# rekey unseal/recovery keys
+vops rekey
+
+# save/restory snapshots
+vops snapshot save 
+vops snapshot restore
+```
+
+</td>
+<td> 
+
+```yaml
+Cluster:
+  - Name: vault-dev
+    Addr: "http://127.0.0.1:8200"
+    TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}"
+    Keys:
+      Path: "{{ .Name }}.json"
+    SnapshotDirectory: "snapshots/"
+    Nodes:
+      - "{{ .Addr }}"
+    ExtraEnv:
+     VAULT_SKIP_VERIFY: true
+
+  - Name: vault-prod
+    Addr: "https://{{ .Name }}.example.com:8200"
+    TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}"
+    Keys:
+      Path: "{{ .Name }}.json"
+      Shares: 5
+      Threshold: 3
+    SnapshotDirectory: "{{ .ENV.HOME }}/snapshots/"
+    Nodes:
+      - "{{ .Name }}-01.example.com:8200"
+      - "{{ .Name }}-02.example.com:8200"
+      - "{{ .Name }}-03.example.com:8200"
+
+CustomCmds:
+  list-peers: 'vault operator raft list-peers'
+  status: 'vault status'
+```
+</td>
+</tr>
+</table>
+<div align="center">
 
 <img src="https://github.com/FalcoSuessgott/vops/actions/workflows/test.yml/badge.svg" alt="drawing"/>
 <img src="https://github.com/FalcoSuessgott/vops/actions/workflows/lint.yml/badge.svg" alt="drawing"/>
@@ -10,11 +80,10 @@
 <img src="https://img.shields.io/github/downloads/FalcoSuessgott/vops/total.svg" alt="drawing"/>
 <img src="https://img.shields.io/github/v/release/FalcoSuessgott/vops" alt="drawing"/>
 <img src="https://img.shields.io/docker/pulls/falcosuessgott/vops" alt="drawing"/>
-
 </div>
 
 
-***`vops` is in very early stage and is likely to change***
+***`vops` is in early stage and is likely to change***
 
 
 # Background
@@ -67,7 +136,7 @@ go build
 ```
 
 # Usage
-`vops` looks for a `vops.yaml` configuration file in your `$PWD`, you change the location by setting `VOPS_CONFIG`.
+`vops` looks for a `vops.yaml` configuration file in your `$PWD`, you can change the location by setting `VOPS_CONFIG`.
 
 `vops` allows you to use templates and environment variables in your configuration file: 
 
@@ -372,3 +441,28 @@ applying VAULT_ADDR
 applying VAULT_TOKEN
 token for cluster cluster-1 copied to clipboard buffer.
 ```
+
+---
+
+## About the `Key.Path`-file
+for now, `vops` expect the JSON format output from a `vault operator init` command:
+
+```json
+{
+  "unseal_keys_b64": [
+    "YrnZCLIdwKDNn9RYkUx3A7J9/I4ogORIXYcTtJ/AWtg="
+  ],
+  "unseal_keys_hex": [
+    "62b9d908b21dc0a0cd9fd458914c7703b27dfc8e2880e4485d8713b49fc05ad8"
+  ],
+  "unseal_shares": 1,
+  "unseal_threshold": 1,
+  "recovery_keys_b64": [],
+  "recovery_keys_hex": [],
+  "recovery_keys_shares": 0,
+  "recovery_keys_threshold": 0,
+  "root_token": "hvs.EhCMSSb1uCW1y0aHI1IZ3feO"
+}
+```
+
+Later you can also just list the unseal/recovery keys in the `vops.yml` aswell, or specifiy pgp encrypted key files.
