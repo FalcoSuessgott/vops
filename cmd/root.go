@@ -66,6 +66,7 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		uiCmd(),
 		loginCmd(),
 		tokenCmd(),
+		completionCmd(),
 	)
 
 	return cmd

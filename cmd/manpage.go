@@ -24,6 +24,9 @@ func manCmd() *ManCmd {
 		DisableFlagsInUseLine: true,
 		Hidden:                true,
 		Args:                  cobra.NoArgs,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			manPage, err := mcoral.NewManPage(1, root.Cmd.Root())
 			if err != nil {
