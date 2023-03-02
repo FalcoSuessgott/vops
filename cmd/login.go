@@ -1,45 +1,21 @@
-package login
+package cmd
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/FalcoSuessgott/vops/pkg/config"
 	"github.com/FalcoSuessgott/vops/pkg/exec"
-	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/spf13/cobra"
 )
 
-type loginOptions struct {
-	Cluster string
-}
-
-// NewLoginCmd login command.
-func NewLoginCmd(cfg string) *cobra.Command {
-	var c *config.Config
-
-	o := &loginOptions{}
-
+func loginCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "login",
 		Short:         "perform a vault login command for the specified cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			fmt.Println("[ Login ]")
-			fmt.Printf("using %s\n", cfg)
-
-			c, err = config.ParseConfig(cfg)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cluster, err := c.GetCluster(o.Cluster)
+			cluster, err := cfg.GetCluster(cluster)
 			if err != nil {
 				return err
 			}
@@ -79,8 +55,6 @@ func NewLoginCmd(cfg string) *cobra.Command {
 			return nil
 		},
 	}
-
-	flags.ClusterFlag(cmd, o.Cluster)
 
 	return cmd
 }

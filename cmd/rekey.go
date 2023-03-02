@@ -1,10 +1,9 @@
-package rekey
+package cmd
 
 import (
 	"fmt"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
-	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/FalcoSuessgott/vops/pkg/fs"
 	"github.com/FalcoSuessgott/vops/pkg/utils"
 	"github.com/FalcoSuessgott/vops/pkg/vault"
@@ -13,14 +12,11 @@ import (
 )
 
 type rekeyOptions struct {
-	Cluster    string
-	Shares     int
-	Threshold  int
-	AllCluster bool
+	Shares    int
+	Threshold int
 }
 
-// NewRekeyCmd vops rekey command.
-func NewRekeyCmd(cfg string) *cobra.Command {
+func rekeyCmd() *cobra.Command {
 	var c *config.Config
 
 	o := &rekeyOptions{}
@@ -31,21 +27,8 @@ func NewRekeyCmd(cfg string) *cobra.Command {
 		Short:         "rekey a cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			fmt.Println("[ Rekey ]")
-			fmt.Printf("using %s\n", cfg)
-
-			c, err = config.ParseConfig(cfg)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if o.AllCluster {
+			if allCluster {
 				for _, cluster := range c.Cluster {
 					if err := o.rekeyCluster(cluster); err != nil {
 						return err
@@ -55,7 +38,7 @@ func NewRekeyCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			cluster, err := c.GetCluster(o.Cluster)
+			cluster, err := c.GetCluster(cluster)
 			if err != nil {
 				return err
 			}
@@ -67,9 +50,6 @@ func NewRekeyCmd(cfg string) *cobra.Command {
 			return nil
 		},
 	}
-
-	flags.AllClusterFlag(cmd, o.AllCluster)
-	flags.ClusterFlag(cmd, o.Cluster)
 
 	cmd.Flags().IntVarP(&o.Shares, "shares", "s", o.Shares, "Number of keyshares")
 	cmd.Flags().IntVarP(&o.Threshold, "threshold", "t", o.Threshold, "Number of required keys to unseal vault")

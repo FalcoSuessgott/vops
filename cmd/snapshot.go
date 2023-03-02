@@ -1,4 +1,4 @@
-package snapshot
+package cmd
 
 import (
 	"bytes"
@@ -6,20 +6,13 @@ import (
 	"path"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
-	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/FalcoSuessgott/vops/pkg/fs"
 	"github.com/FalcoSuessgott/vops/pkg/utils"
 	"github.com/FalcoSuessgott/vops/pkg/vault"
 	"github.com/spf13/cobra"
 )
 
-type snapshotOptions struct {
-	Cluster    string
-	AllCluster bool
-}
-
-// NewSnapshotCmd snapshot command.
-func NewSnapshotCmd(cfg string) *cobra.Command {
+func snapshotCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "snapshot",
 		Aliases:       []string{"ss"},
@@ -32,40 +25,23 @@ func NewSnapshotCmd(cfg string) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newSnapSavewCmd(cfg),
-		newSnapRestoreCmd(cfg),
+		snapSavewCmd(),
+		snapRestoreCmd(),
 	)
 
 	return cmd
 }
 
-func newSnapSavewCmd(cfg string) *cobra.Command {
-	var c *config.Config
-
-	o := &snapshotOptions{}
-
+func snapSavewCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "save",
 		Aliases:       []string{"s"},
 		Short:         "save a snapshot of a vault cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			fmt.Println("[ Snapshot Save ]")
-			fmt.Printf("using %s\n", cfg)
-
-			c, err = config.ParseConfig(cfg)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if o.AllCluster {
-				for _, cluster := range c.Cluster {
+			if allCluster {
+				for _, cluster := range cfg.Cluster {
 					if err := saveSnapshot(cluster); err != nil {
 						return err
 					}
@@ -74,7 +50,7 @@ func newSnapSavewCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			cluster, err := c.GetCluster(o.Cluster)
+			cluster, err := cfg.GetCluster(cluster)
 			if err != nil {
 				return err
 			}
@@ -83,39 +59,19 @@ func newSnapSavewCmd(cfg string) *cobra.Command {
 		},
 	}
 
-	flags.AllClusterFlag(cmd, o.AllCluster)
-	flags.ClusterFlag(cmd, o.Cluster)
-
 	return cmd
 }
 
-func newSnapRestoreCmd(cfg string) *cobra.Command {
-	var c *config.Config
-
-	o := &snapshotOptions{}
-
+func snapRestoreCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "restore",
 		Aliases:       []string{"r"},
 		Short:         "restore a snapshot of a vault cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			fmt.Println("[ Snapshot Save ]")
-			fmt.Printf("using %s\n", cfg)
-
-			c, err = config.ParseConfig(cfg)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if o.AllCluster {
-				for _, cluster := range c.Cluster {
+			if allCluster {
+				for _, cluster := range cfg.Cluster {
 					if err := restoreSnapshot(cluster); err != nil {
 						return err
 					}
@@ -124,7 +80,7 @@ func newSnapRestoreCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			cluster, err := c.GetCluster(o.Cluster)
+			cluster, err := cfg.GetCluster(cluster)
 			if err != nil {
 				return err
 			}
@@ -132,9 +88,6 @@ func newSnapRestoreCmd(cfg string) *cobra.Command {
 			return restoreSnapshot(*cluster)
 		},
 	}
-
-	flags.AllClusterFlag(cmd, o.AllCluster)
-	flags.ClusterFlag(cmd, o.Cluster)
 
 	return cmd
 }

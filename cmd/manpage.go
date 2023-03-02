@@ -1,4 +1,4 @@
-package manpage
+package cmd
 
 import (
 	"fmt"
@@ -14,8 +14,7 @@ type ManCmd struct {
 	Cmd *cobra.Command
 }
 
-// NewManCmd manpage cmd.
-func NewManCmd() *ManCmd {
+func manCmd() *ManCmd {
 	root := &ManCmd{}
 
 	c := &cobra.Command{

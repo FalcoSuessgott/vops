@@ -5,25 +5,19 @@ import (
 	"io"
 	"os"
 
-	"github.com/FalcoSuessgott/vops/cmd/config"
-	"github.com/FalcoSuessgott/vops/cmd/custom"
-	"github.com/FalcoSuessgott/vops/cmd/generateroot"
-	"github.com/FalcoSuessgott/vops/cmd/initialize"
-	"github.com/FalcoSuessgott/vops/cmd/login"
-	"github.com/FalcoSuessgott/vops/cmd/manpage"
-	"github.com/FalcoSuessgott/vops/cmd/rekey"
-	"github.com/FalcoSuessgott/vops/cmd/seal"
-	"github.com/FalcoSuessgott/vops/cmd/snapshot"
-	"github.com/FalcoSuessgott/vops/cmd/token"
-	"github.com/FalcoSuessgott/vops/cmd/ui"
-	"github.com/FalcoSuessgott/vops/cmd/unseal"
-	"github.com/FalcoSuessgott/vops/cmd/version"
+	"github.com/FalcoSuessgott/vops/pkg/config"
+	"github.com/FalcoSuessgott/vops/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
 const cfgFileEnvVar = "VOPS_CONFIG"
 
-var cfgFile = "vops.yaml"
+var (
+	cfgFile    = "vops.yaml"
+	cfg        *config.Config
+	cluster    string
+	allCluster bool
+)
 
 // NewRootCmd vops root command.
 func NewRootCmd(v string, writer io.Writer) *cobra.Command {
@@ -36,27 +30,41 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		Short:         "A HashiCorp Vault cluster operations tool",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			var err error
+
+			fmt.Println(utils.PrintHeader(cmd.Use, cfgFile))
+
+			cfg, err = config.ParseConfig(cfgFile)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
 	}
 
 	cmd.PersistentFlags().StringVar(&cfgFile, "config", cfgFile, "path to the vops configfile")
+	cmd.PersistentFlags().StringVarP(&cluster, "cluster", "c", cluster, "name of the vault cluster")
+	cmd.PersistentFlags().BoolVarP(&allCluster, "all-cluster", "A", allCluster, "perform action for all cluster defined in the vops configuration file")
 
 	cmd.AddCommand(
-		initialize.NewInitCmd(cfgFile),
-		unseal.NewUnsealCmd(cfgFile),
-		seal.NewSealCmd(cfgFile),
-		rekey.NewRekeyCmd(cfgFile),
-		generateroot.NewGenerateRootCmd(cfgFile),
-		version.NewVersionCmd(v),
-		snapshot.NewSnapshotCmd(cfgFile),
-		custom.NewCustomCmd(cfgFile),
-		config.NewConfigCmd(cfgFile),
-		manpage.NewManCmd().Cmd,
-		ui.NewUICmd(cfgFile),
-		login.NewLoginCmd(cfgFile),
-		token.NewTokenCmd(cfgFile),
+		initCmd(),
+		unsealCmd(),
+		sealCmd(),
+		rekeyCmd(),
+		generateRootCmd(),
+		versionCmd(v),
+		snapshotCmd(),
+		customCmd(),
+		configCmd(),
+		manCmd().Cmd,
+		uiCmd(),
+		loginCmd(),
+		tokenCmd(),
 	)
 
 	return cmd

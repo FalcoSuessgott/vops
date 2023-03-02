@@ -1,45 +1,21 @@
-package ui
+package cmd
 
 import (
 	"fmt"
 	"os/exec"
 	"runtime"
 
-	"github.com/FalcoSuessgott/vops/pkg/config"
-	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/spf13/cobra"
 )
 
-type uiOptions struct {
-	Cluster string
-}
-
-// NewUICmd ui command.
-func NewUICmd(cfg string) *cobra.Command {
-	var c *config.Config
-
-	o := &uiOptions{}
-
+func uiCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "ui",
 		Short:         "open the UI of the specified vault cluster address in your browser",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			fmt.Println("[ Generate Root Token ]")
-			fmt.Printf("using %s\n", cfg)
-
-			c, err = config.ParseConfig(cfg)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cluster, err := c.GetCluster(o.Cluster)
+			cluster, err := cfg.GetCluster(cluster)
 			if err != nil {
 				return err
 			}
@@ -66,8 +42,6 @@ func NewUICmd(cfg string) *cobra.Command {
 			return nil
 		},
 	}
-
-	flags.ClusterFlag(cmd, o.Cluster)
 
 	return cmd
 }

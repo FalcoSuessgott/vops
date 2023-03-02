@@ -1,47 +1,23 @@
-package seal
+package cmd
 
 import (
 	"fmt"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
-	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/FalcoSuessgott/vops/pkg/vault"
 	"github.com/spf13/cobra"
 )
 
-type sealOptions struct {
-	Cluster    string
-	AllCluster bool
-}
-
-// NewSealCmd vops seal command.
-func NewSealCmd(cfg string) *cobra.Command {
-	var c *config.Config
-
-	o := &sealOptions{}
-
+func sealCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "seal",
 		Aliases:       []string{"s"},
 		Short:         "seal a cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			fmt.Println("[ Seal ]")
-			fmt.Printf("using %s\n", cfg)
-
-			c, err = config.ParseConfig(cfg)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if o.AllCluster {
-				for _, cluster := range c.Cluster {
+			if allCluster {
+				for _, cluster := range cfg.Cluster {
 					if err := sealCluster(cluster); err != nil {
 						return err
 					}
@@ -50,7 +26,7 @@ func NewSealCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			cluster, err := c.GetCluster(o.Cluster)
+			cluster, err := cfg.GetCluster(cluster)
 			if err != nil {
 				return err
 			}
@@ -64,9 +40,6 @@ func NewSealCmd(cfg string) *cobra.Command {
 			return nil
 		},
 	}
-
-	flags.AllClusterFlag(cmd, o.AllCluster)
-	flags.ClusterFlag(cmd, o.Cluster)
 
 	return cmd
 }
