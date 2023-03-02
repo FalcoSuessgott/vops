@@ -1,4 +1,4 @@
-package config
+package cmd
 
 import (
 	"fmt"
@@ -10,8 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewConfigCmd config command.
-func NewConfigCmd(cfg string) *cobra.Command {
+func configCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "config",
 		Aliases:       []string{"c", "cfg"},
@@ -24,19 +23,22 @@ func NewConfigCmd(cfg string) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		newConfigExampleCmd(),
-		newConfigValidateCmd(cfg),
+		configExampleCmd(),
+		configValidateCmd(),
 	)
 
 	return cmd
 }
 
-func newConfigExampleCmd() *cobra.Command {
+func configExampleCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "example",
 		Short:         "prints an example configuration",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			exampleCfg := &config.Config{
 				CustomCmds: map[string]interface{}{
@@ -73,35 +75,20 @@ func newConfigExampleCmd() *cobra.Command {
 	return cmd
 }
 
-func newConfigValidateCmd(cfg string) *cobra.Command {
-	var c *config.Config
-
+func configValidateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "validate",
 		Aliases:       []string{"v", "val"},
 		Short:         "validates a vops configuration file",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			fmt.Println("[ Validate ]")
-			fmt.Printf("using %s\n", cfg)
-
-			c, err = config.ParseConfig(cfg)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println()
 
 			w := new(tabwriter.Writer)
 			w.Init(os.Stdout, 0, 8, 2, '\t', tabwriter.TabIndent)
 
-			for _, cluster := range c.Cluster {
+			for _, cluster := range cfg.Cluster {
 				fmt.Fprintln(w, cluster)
 			}
 

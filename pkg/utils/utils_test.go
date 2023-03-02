@@ -6,6 +6,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestPrintHeaders(t *testing.T) {
+	exp := "[ Example ]\nreading file.txt"
+
+	assert.Equal(t, exp, PrintHeader("example", "file.txt"))
+}
+
 func TestToJson(t *testing.T) {
 	input := map[string]interface{}{
 		"key_1": "value",

@@ -3,14 +3,28 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/ghodss/yaml"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	yml "gopkg.in/yaml.v3"
 )
+
+// PrintHeader print outs the command header.
+func PrintHeader(name, config string) string {
+	c := cases.Title(language.English)
+
+	return fmt.Sprintf(
+		"[ %s ]\n"+
+			"reading %s",
+		c.String(name), config,
+	)
+}
 
 // GetEnvs returns a map with all environment variables.
 func GetEnvs() map[string]interface{} {

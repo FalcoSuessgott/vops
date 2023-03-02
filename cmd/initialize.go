@@ -1,53 +1,28 @@
-package initialize
+package cmd
 
 import (
 	"fmt"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
-	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/FalcoSuessgott/vops/pkg/fs"
 	"github.com/FalcoSuessgott/vops/pkg/utils"
 	"github.com/FalcoSuessgott/vops/pkg/vault"
 	"github.com/spf13/cobra"
 )
 
-type initOptions struct {
-	Shares     int
-	Threshold  int
-	Cluster    string
-	Status     bool
-	AllCluster bool
-}
+var status bool
 
-// NewInitCmd vops init command.
-func NewInitCmd(cfg string) *cobra.Command {
-	var c *config.Config
-
-	o := &initOptions{}
-
+func initCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "init",
 		Aliases:       []string{"i"},
 		Short:         "initialize a vault cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			fmt.Println("[ Initialize ]")
-			fmt.Printf("using %s\n", cfg)
-
-			c, err = config.ParseConfig(cfg)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if o.AllCluster {
-				for _, cluster := range c.Cluster {
-					if err := o.initializeCluster(cluster); err != nil {
+			if allCluster {
+				for _, cluster := range cfg.Cluster {
+					if err := initializeCluster(cluster); err != nil {
 						return err
 					}
 				}
@@ -55,12 +30,12 @@ func NewInitCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			cluster, err := c.GetCluster(o.Cluster)
+			cluster, err := cfg.GetCluster(cluster)
 			if err != nil {
 				return err
 			}
 
-			if err := o.initializeCluster(*cluster); err != nil {
+			if err := initializeCluster(*cluster); err != nil {
 				return err
 			}
 
@@ -68,26 +43,12 @@ func NewInitCmd(cfg string) *cobra.Command {
 		},
 	}
 
-	flags.AllClusterFlag(cmd, o.AllCluster)
-	flags.ClusterFlag(cmd, o.Cluster)
-
-	cmd.Flags().BoolVarP(&o.Status, "status", "S", o.Status, "print the initialization status of a cluster")
-	cmd.Flags().IntVarP(&o.Shares, "shares", "s", o.Shares, "Number of keyshares")
-	cmd.Flags().IntVarP(&o.Threshold, "threshold", "t", o.Threshold, "Number of required keys to unseal vault")
+	cmd.Flags().BoolVarP(&status, "status", "S", status, "print the initialization status of a cluster")
 
 	return cmd
 }
 
-//nolint: cyclop
-func (o *initOptions) initializeCluster(cluster config.Cluster) error {
-	if o.Shares > 0 {
-		cluster.Keys.Shares = o.Shares
-	}
-
-	if o.Threshold > 0 {
-		cluster.Keys.Threshold = o.Threshold
-	}
-
+func initializeCluster(cluster config.Cluster) error {
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
 	fmt.Printf("attempting intialization of cluster \"%s\" with %d shares and a threshold of %d\n", cluster.Name, cluster.Keys.Shares, cluster.Keys.Threshold)
 
@@ -109,7 +70,7 @@ func (o *initOptions) initializeCluster(cluster config.Cluster) error {
 		return err
 	}
 
-	if o.Status || isInitialized {
+	if status || isInitialized {
 		fmt.Printf("%s is already initialized.\n", cluster.Name)
 
 		return nil

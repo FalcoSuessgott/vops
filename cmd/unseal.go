@@ -1,25 +1,21 @@
-package unseal
+package cmd
 
 import (
 	"fmt"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
-	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/FalcoSuessgott/vops/pkg/vault"
 	"github.com/hashicorp/vault/api"
 	"github.com/spf13/cobra"
 )
 
 type unsealOptions struct {
-	Cluster    string
-	Node       string
-	AllNodes   bool
-	AllCluster bool
+	Node     string
+	AllNodes bool
 }
 
-// NewUnsealCmd vops unseal command.
 // nolint: gocognit, cyclop
-func NewUnsealCmd(cfg string) *cobra.Command {
+func unsealCmd() *cobra.Command {
 	var c *config.Config
 
 	o := &unsealOptions{
@@ -32,21 +28,8 @@ func NewUnsealCmd(cfg string) *cobra.Command {
 		Short:         "unseal a single node or a all nodes of a vault cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			fmt.Println("[ Unseal ]")
-			fmt.Printf("using %s\n", cfg)
-
-			c, err = config.ParseConfig(cfg)
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if o.AllCluster {
+			if allCluster {
 				for _, cluster := range c.Cluster {
 					if err := unsealCluster(cluster); err != nil {
 						return err
@@ -57,7 +40,7 @@ func NewUnsealCmd(cfg string) *cobra.Command {
 			}
 
 			if o.AllNodes {
-				cluster, err := c.GetCluster(o.Cluster)
+				cluster, err := c.GetCluster(cluster)
 				if err != nil {
 					return err
 				}
@@ -69,7 +52,7 @@ func NewUnsealCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			cluster, err := c.GetCluster(o.Cluster)
+			cluster, err := c.GetCluster(cluster)
 			if err != nil {
 				return err
 			}
@@ -98,9 +81,6 @@ func NewUnsealCmd(cfg string) *cobra.Command {
 			return fmt.Errorf("invalid node \"%s\" for cluster \"%s\"", o.Node, cluster.Name)
 		},
 	}
-
-	flags.AllClusterFlag(cmd, o.AllCluster)
-	flags.ClusterFlag(cmd, o.Cluster)
 
 	cmd.Flags().StringVarP(&o.Node, "node", "n", o.Node, "unseal a single vault node")
 	cmd.Flags().BoolVarP(&o.AllNodes, "all", "a", o.AllNodes, "unseal all nodes of a cluster")

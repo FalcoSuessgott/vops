@@ -1,4 +1,4 @@
-package custom
+package cmd
 
 import (
 	"fmt"
@@ -6,21 +6,15 @@ import (
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
 	"github.com/FalcoSuessgott/vops/pkg/exec"
-	"github.com/FalcoSuessgott/vops/pkg/flags"
 	"github.com/spf13/cobra"
 )
 
 type customOptions struct {
-	Command    string
-	Cluster    string
-	AllCluster bool
-	List       bool
+	Command string
+	List    bool
 }
 
-// NewCustomCmd vops custom command.
-func NewCustomCmd(cfg string) *cobra.Command {
-	var c *config.Config
-
+func customCmd() *cobra.Command {
 	o := &customOptions{}
 
 	cmd := &cobra.Command{
@@ -29,27 +23,10 @@ func NewCustomCmd(cfg string) *cobra.Command {
 		Short:         "run any custom command for a vault cluster",
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			var err error
-
-			fmt.Println("[ Custom Command ]")
-			fmt.Printf("using %s\n", cfg)
-
-			c, err = config.ParseConfig(cfg)
-			if err != nil {
-				return err
-			}
-
-			if len(c.CustomCmds) == 0 {
-				return fmt.Errorf("a least one custom command is required")
-			}
-
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if o.List {
 				fmt.Println("\n[ Available Commands ]")
-				for name, cmd := range c.CustomCmds {
+				for name, cmd := range cfg.CustomCmds {
 					fmt.Printf("\"%s\": \"%s\"\n", name, cmd)
 				}
 
@@ -58,9 +35,9 @@ func NewCustomCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			if o.AllCluster {
-				for _, cluster := range c.Cluster {
-					if err := o.runCustomCommand(cluster, c.CustomCmds); err != nil {
+			if allCluster {
+				for _, cluster := range cfg.Cluster {
+					if err := o.runCustomCommand(cluster, cfg.CustomCmds); err != nil {
 						return err
 					}
 				}
@@ -68,12 +45,12 @@ func NewCustomCmd(cfg string) *cobra.Command {
 				return nil
 			}
 
-			cluster, err := c.GetCluster(o.Cluster)
+			cluster, err := cfg.GetCluster(cluster)
 			if err != nil {
 				return err
 			}
 
-			if err := o.runCustomCommand(*cluster, c.CustomCmds); err != nil {
+			if err := o.runCustomCommand(*cluster, cfg.CustomCmds); err != nil {
 				return err
 			}
 
@@ -81,11 +58,7 @@ func NewCustomCmd(cfg string) *cobra.Command {
 		},
 	}
 
-	flags.AllClusterFlag(cmd, o.AllCluster)
-	flags.ClusterFlag(cmd, o.Cluster)
-
 	cmd.Flags().BoolVarP(&o.List, "list", "l", o.List, "list all available custom commands")
-	cmd.Flags().StringVarP(&o.Command, "command", "x", o.Cluster, "the name of command to run")
 
 	return cmd
 }

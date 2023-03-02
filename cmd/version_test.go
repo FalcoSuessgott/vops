@@ -1,4 +1,4 @@
-package version
+package cmd
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ func TestVersion(t *testing.T) {
 	version := "v1.0.0"
 	expected := "vops v1.0.0\n"
 
-	c := NewVersionCmd(version)
+	c := versionCmd(version)
 	b := bytes.NewBufferString("")
 	c.SetOut(b)
 

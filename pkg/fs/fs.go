@@ -20,7 +20,7 @@ func ReadFile(path string) []byte {
 // WriteToFile writes to a file.
 func WriteToFile(content []byte, path string) error {
 	if err := ioutil.WriteFile(path, content, 0o600); err != nil {
-		log.Fatalf("error while reading file: %v", err)
+		log.Fatalf("error while writing to file: %v", err)
 	}
 
 	return nil
