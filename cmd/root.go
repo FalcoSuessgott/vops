@@ -60,7 +60,7 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		versionCmd(v),
 		snapshotCmd(),
 		customCmd(),
-		configCmd(),
+		configCmd(writer),
 		manCmd().Cmd,
 		uiCmd(),
 		loginCmd(),

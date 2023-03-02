@@ -19,7 +19,7 @@ run: ## run the app
 	@go run -ldflags "-X main.version=$(shell git describe --abbrev=0 --tags)"  main.go
 
 PHONY: test
-test: clean ## display test coverage
+test: clean vault ## display test coverage
 	go test --cover -parallel=1 -v -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
 
@@ -52,7 +52,7 @@ token: ## copies vault token in clipboard buffer
 
 .PHONY: clean
 clean: ## clean the development vault
-	@rm -rf snapshots/ coverage.out dist/ $(projectname) manpages/ dist/ completions/ assets/raft/* || true
+	@rm -rf cmd/vops.yml cmd/cluster-1* snapshots/ coverage.out dist/ $(projectname) manpages/ dist/ completions/ assets/raft/* || true
 	@kill -9 $(shell pgrep -x vault) 2> /dev/null || true
 
 .PHONY: vhs

@@ -58,6 +58,7 @@ func customCmd() *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringVarP(&o.Command, "command", "x", o.Command, "the name of command defined in vops.yaml to run")
 	cmd.Flags().BoolVarP(&o.List, "list", "l", o.List, "list all available custom commands")
 
 	return cmd

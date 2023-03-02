@@ -16,8 +16,6 @@ type unsealOptions struct {
 
 // nolint: gocognit, cyclop
 func unsealCmd() *cobra.Command {
-	var c *config.Config
-
 	o := &unsealOptions{
 		AllNodes: true,
 	}
@@ -30,7 +28,7 @@ func unsealCmd() *cobra.Command {
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if allCluster {
-				for _, cluster := range c.Cluster {
+				for _, cluster := range cfg.Cluster {
 					if err := unsealCluster(cluster); err != nil {
 						return err
 					}
@@ -40,7 +38,7 @@ func unsealCmd() *cobra.Command {
 			}
 
 			if o.AllNodes {
-				cluster, err := c.GetCluster(cluster)
+				cluster, err := cfg.GetCluster(cluster)
 				if err != nil {
 					return err
 				}
@@ -52,7 +50,7 @@ func unsealCmd() *cobra.Command {
 				return nil
 			}
 
-			cluster, err := c.GetCluster(cluster)
+			cluster, err := cfg.GetCluster(cluster)
 			if err != nil {
 				return err
 			}

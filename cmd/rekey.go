@@ -11,16 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type rekeyOptions struct {
-	Shares    int
-	Threshold int
-}
-
 func rekeyCmd() *cobra.Command {
-	var c *config.Config
-
-	o := &rekeyOptions{}
-
 	cmd := &cobra.Command{
 		Use:           "rekey",
 		Aliases:       []string{"rk"},
@@ -29,8 +20,8 @@ func rekeyCmd() *cobra.Command {
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if allCluster {
-				for _, cluster := range c.Cluster {
-					if err := o.rekeyCluster(cluster); err != nil {
+				for _, cluster := range cfg.Cluster {
+					if err := rekeyCluster(cluster); err != nil {
 						return err
 					}
 				}
@@ -38,12 +29,12 @@ func rekeyCmd() *cobra.Command {
 				return nil
 			}
 
-			cluster, err := c.GetCluster(cluster)
+			cluster, err := cfg.GetCluster(cluster)
 			if err != nil {
 				return err
 			}
 
-			if err := o.rekeyCluster(*cluster); err != nil {
+			if err := rekeyCluster(*cluster); err != nil {
 				return err
 			}
 
@@ -51,22 +42,10 @@ func rekeyCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().IntVarP(&o.Shares, "shares", "s", o.Shares, "Number of keyshares")
-	cmd.Flags().IntVarP(&o.Threshold, "threshold", "t", o.Threshold, "Number of required keys to unseal vault")
-
 	return cmd
 }
 
-//nolint: cyclop
-func (o *rekeyOptions) rekeyCluster(cluster config.Cluster) error {
-	if o.Shares > 0 {
-		cluster.Keys.Shares = o.Shares
-	}
-
-	if o.Threshold > 0 {
-		cluster.Keys.Threshold = o.Threshold
-	}
-
+func rekeyCluster(cluster config.Cluster) error {
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
 	fmt.Printf("performing a rekey for %s with %d shares and a threshold of %d\n", cluster.Name, cluster.Keys.Shares, cluster.Keys.Threshold)
 
