@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"text/tabwriter"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func configCmd() *cobra.Command {
+func configCmd(w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "config",
 		Aliases:       []string{"c", "cfg"},
@@ -23,14 +24,14 @@ func configCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		configExampleCmd(),
+		configExampleCmd(w),
 		configValidateCmd(),
 	)
 
 	return cmd
 }
 
-func configExampleCmd() *cobra.Command {
+func configExampleCmd(w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "example",
 		Short:         "prints an example configuration",
@@ -66,7 +67,7 @@ func configExampleCmd() *cobra.Command {
 				},
 			}
 
-			fmt.Println(string(utils.ToYAML(&exampleCfg)))
+			fmt.Fprintln(w, string(utils.ToYAML(&exampleCfg)))
 
 			return nil
 		},

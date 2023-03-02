@@ -19,6 +19,14 @@ jobs:
         with:
           go-version: 1.18
 
+      - name: install vault
+        run: |
+          curl -O https://releases.hashicorp.com/vault/1.13.0/vault_1.13.0_linux_amd64.zip
+          unzip vault_1.13.0_linux_amd64.zip
+          sudo mv vault /usr/bin/.
+          mkdir assets/raft
+          vault server -config assets/vault-cfg.hcl &
+
       - name: go get
         run: go get ./...
 
