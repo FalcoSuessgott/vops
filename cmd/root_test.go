@@ -62,7 +62,12 @@ func TestE2E(t *testing.T) {
 		},
 		{
 			name:    "custom",
-			command: []string{"custom", "-x", "status", "cluster-1"},
+			command: []string{"custom", "-x", "status", "-c", "cluster-1"},
+			err:     false,
+		},
+		{
+			name:    "adhoc",
+			command: []string{"adhoc", "-x", "vault status", "cluster-1"},
 			err:     false,
 		},
 		{
