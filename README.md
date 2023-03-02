@@ -90,18 +90,17 @@ CustomCmds:
 I automate, develop and maintain a lot of Vault cluster for different clients. When automating Vault using tools such as `terraform` and `ansible` I was missing a small utility that allows me to quickly perform certain operations like generate a new root token or create a snapshot. Thus I came up with `vops`, which stands for **v**ault-**op**eration**s**
 
 # Features 
-* define as many vault cluster as you need
-* template your `vops.yaml` and be able to use clever naming convetions
-* Iterate over all defined cluster for every supported option
-* Initialize a Vault 
-* Seal & Unseal a Vault 
-* Rekey a Vault 
-* Generate a new root token
-* save and restore a Vault (raft storage required) Snapshot
-* open the UI in your default browser
-* perform a vault login to a specified cluster in order to continue working with the vault CLI
-* copy the token from a the token exec command to your clipboard buffer for Vault UI login
-* define custom commands then can be run for any cluster
+* template your `vops.yaml` using [clever naming conventions](https://github.com/FalcoSuessgott/vops#usage)
+* Iterate over all defined cluster (`--all-cluster/-A`) for every supported option
+* [Initialize](https://github.com/FalcoSuessgott/vops#initialize) a Vault 
+* [Seal](https://github.com/FalcoSuessgott/vops#seal) & [Unseal](https://github.com/FalcoSuessgott/vops#unseal) a Vault 
+* [Generate a new root token](https://github.com/FalcoSuessgott/vops#generate-root)
+* [save](https://github.com/FalcoSuessgott/vops#snapshot-save) a Vault (raft storage required) Snapshot
+* [open the UI](https://github.com/FalcoSuessgott/vops#ui) in your default browser
+* [perform a vault login](https://github.com/FalcoSuessgott/vops#login) to a specified cluster in order to continue working with the vault CLI
+* [copy the token](https://github.com/FalcoSuessgott/vops#token) from a the token exec command to your clipboard buffer for Vault UI login
+* define [custom commands](https://github.com/FalcoSuessgott/vops#custom-commands) then can be run for any cluster
+* run [adhoc commands](https://github.com/FalcoSuessgott/vops#adhoc-commands)
 
 # Installation
 ```bash
@@ -261,7 +260,7 @@ Snapshot Directory:     snapshots/
 ## Initialize
 > initialize vault cluster 
 ```bash
-$> vops init --cluster cluster-1
+$> vops init -c <cluster>
 [ Intialization ]
 using vops.yaml
 
@@ -276,7 +275,7 @@ successfully initialized cluster-1 and wrote keys to cluster-1.json.
 ## Unseal
 > unseal a vault cluster using the specified keyfile
 ```bash
-> vops unseal --cluster cluster-1
+> vops unseal -c <cluster>
 [ Unseal ]
 using vops.yaml
 
@@ -290,7 +289,7 @@ cluster "cluster-1" unsealed
 ## Seal
 > seal a cluster
 ```bash
-> vops seal --cluster cluster-1
+> vops seal -c <cluster>
 [ Seal ]
 using vops.yaml
 
@@ -307,7 +306,7 @@ tbd.
 ## Generate Root
 > generates a new root token
 ```bash
-> vops generate-root --cluster cluster-1
+> vops generate-root -c <cluster>
 [ Generate Root Token ]
 using vops.yaml
 
@@ -322,7 +321,7 @@ new root token: "hvs.dmhO9aVPT0aBB1G7nrj3UdDh" (make sure to update your token e
 ## Snapshots
 ### Snapshot save
 ```bash
-> vops snapshot save --cluster cluster-1
+> vops snapshot save -c <cluster>
 [ Snapshot Save ]
 using vops.yaml
 
@@ -349,7 +348,7 @@ using vops.yaml
 
 run any available command with "vops custom -x <command name> -c <cluster-name>".
 
-> vops custom -x status --cluster --cluster-1
+> vops custom -x <custom command> -c <cluster>
 [ Custom ]
 using vops.yaml
 
@@ -380,11 +379,45 @@ Raft Committed Index    36
 Raft Applied Index      36
 ```
 
+## Adhoc Commands
+> similar to Ansible, run a adhoc command for a cluster
+```bash
+vops adhoc -x "vault status" -c <cluster>
+[ Adhoc ]
+reading ./assets/vops.yaml
+
+[ cluster-1 ]
+applying VAULT_SKIP_VERIFY
+applying VAULT_ADDR
+applying VAULT_TOKEN
+token exec command successful
+
+$> vault status
+Key                     Value
+---                     -----
+Seal Type               shamir
+Initialized             true
+Sealed                  false
+Total Shares            5
+Threshold               5
+Version                 1.12.1
+Build Date              2022-10-27T12:32:05Z
+Storage Type            raft
+Cluster Name            vault-cluster-39a4f8c3
+Cluster ID              c9f326fa-9e59-b527-04a0-c4270995cc7f
+HA Enabled              true
+HA Cluster              https://127.0.0.1:8201
+HA Mode                 active
+Active Since            2023-03-02T17:51:12.542083099Z
+Raft Committed Index    38
+Raft Applied Index      38
+```
+
 ## UI
 > opens the Vault Address in your default browser
 
 ```bash
-vops ui --cluster cluster-1
+vops ui -c <cluster>
 [ UI ]
 using ./assets/vops.yaml
 
@@ -396,7 +429,7 @@ opening http://127.0.0.1:8200
 > performs a vault token login command in order to work with the vault CLI
 
 ```bash
-vops login --cluster cluster-1
+vops login -c <cluster>
 [ Login ]
 using ./assets/vops.yaml
 
@@ -428,7 +461,7 @@ policies             ["root"]
 > copy the token from the token exec command to your clipboard buffer
 
 ```bash
-vops token --cluster cluster-1
+vops token -c <cluster>
 
 [ Token ]
 using ./assets/vops.yaml

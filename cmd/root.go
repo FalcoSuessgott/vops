@@ -56,6 +56,7 @@ func NewRootCmd(v string, writer io.Writer) *cobra.Command {
 		unsealCmd(),
 		sealCmd(),
 		rekeyCmd(),
+		adhocCmd(),
 		generateRootCmd(),
 		versionCmd(v),
 		snapshotCmd(),
