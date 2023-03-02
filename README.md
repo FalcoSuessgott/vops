@@ -11,29 +11,34 @@
 ```bash
 # configure
 VOPS_CONFIG="./vops.yaml"
-
-# initialize
-vops init --cluster vault-dev
-
-# list cluster
+VOPS_CLUSTER="vault-dev" 
+# print example config
+vops config example
+# list cluster and render configs
 vops config validate
-
+# initialize
+vops init --cluster <cluster> # -A for all Cluster
 # unseal
-vops unseal -c vault-dev
-VOPS_CLUSTER=vault-dev
-
+vops unseal -c <cluster> # optional: -n <node>
 # seal
-vops seal
-
+vops seal -c <cluster>
 # generate root token
-vops generate-root
-
+vops generate-root -c <cluster>
 # rekey unseal/recovery keys
-vops rekey
-
+vops rekey -c <cluster>
 # save/restory snapshots
-vops snapshot save 
-vops snapshot restore
+vops snapshot save -c <cluster>
+vops snapshot restore -c <cluster>
+# custom commands
+vops custom -c <cluster> -x <custom command>
+# adhoc commands
+vops adhoc -x "vault status" -c <cluster>
+# open UI
+vops ui -c <cluster>
+# copy token
+vops token -c <cluster>
+# vault login 
+vops login -c <cluster>
 ```
 
 </td>
@@ -45,6 +50,7 @@ Cluster:
     Addr: "http://127.0.0.1:8200"
     TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}"
     Keys:
+      # see https://github.com/FalcoSuessgott/vops#about-the-keypath-file for the required format
       Path: "{{ .Name }}.json"
     SnapshotDirectory: "snapshots/"
     Nodes:
@@ -54,7 +60,7 @@ Cluster:
 
   - Name: vault-prod
     Addr: "https://{{ .Name }}.example.com:8200"
-    TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}"
+    TokenExecCmd: "vault login $(cat ${{ .ENV.HOME }}/.vault_token)"
     Keys:
       Path: "{{ .Name }}.json"
       Shares: 5
@@ -64,6 +70,8 @@ Cluster:
       - "{{ .Name }}-01.example.com:8200"
       - "{{ .Name }}-02.example.com:8200"
       - "{{ .Name }}-03.example.com:8200"
+      - "{{ .Name }}-04.example.com:8200"
+      - "{{ .Name }}-05.example.com:8200"
 
 CustomCmds:
   list-peers: 'vault operator raft list-peers'
@@ -134,58 +142,6 @@ git clone https://github.com/FalcoSuessgott/vops && cd vops
 go build 
 ```
 
-# Usage
-`vops` looks for a `vops.yaml` configuration file in your `$PWD`, you can change the location by setting `VOPS_CONFIG`.
-
-`vops` allows you to use templates and environment variables in your configuration file: 
-
-<table>
-<tr>
-<td> Default </td> <td> Templated </td>
-</tr>
-<tr>
-<td>
-
-```yaml
-Cluster:
-  - Name: dev-cluster
-    Addr: "http://192.168.0.100:8200"
-    TokenExecCmd: "jq -r '.root_token' dev-cluster-token-file.json"
-    Keys:
-      Path: "dev-cluster-token-file.json"
-    SnapshotDirectory: "/home/user/snapshots/"
-    Nodes:
-      - "http://192.168.0.100:8200"
-    ExtraEnv:
-     VAULT_SKIP_VERIFY: true
-
-  - Name: prod-cluster
-    ...
-```
-
-</td>
-<td> 
-
-```yaml
-Cluster:
-  - Name: dev-cluster
-    Addr: "http://192.168.0.100:8200"
-    TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}"
-    Keys:
-      Path: "{{ .Name }}-token-file.json"
-    SnapshotDirectory: "{{ .Env.HOME }}/snapshots/"
-    Nodes:
-      - "{{ .Addr }}"
-    ExtraEnv:
-     VAULT_SKIP_VERIFY: true
-
-  - Name: prod-cluster
-    ....
-```
-</td>
-</tr>
-</table>
-
 # Quickstart
 ## Prerequisites 
 Start a Vault with Integrated Storage locally:
@@ -219,7 +175,7 @@ vops config example > vops.yaml
 cat vops.yaml
 ```
 
-created the folloing `vops.yaml`:
+created the following `vops.yaml`:
 
 ```yaml
 Cluster:
