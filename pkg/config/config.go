@@ -12,7 +12,7 @@ import (
 const (
 	clusterEnvVar       = "VOPS_CLUSTER"
 	defaultKeyShares    = 5
-	defaultKeyThreshold = 5
+	defaultKeyThreshold = 3
 )
 
 var (

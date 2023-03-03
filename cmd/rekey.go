@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
 	"github.com/FalcoSuessgott/vops/pkg/fs"
@@ -45,19 +47,16 @@ func rekeyCmd() *cobra.Command {
 	return cmd
 }
 
+// nolint: cyclop
 func rekeyCluster(cluster config.Cluster) error {
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
 	fmt.Printf("performing a rekey for %s with %d shares and a threshold of %d\n", cluster.Name, cluster.Keys.Shares, cluster.Keys.Threshold)
-
-	if cluster.Keys.Path == "" {
-		return fmt.Errorf("a key file containing unseal/recovery keys for that cluster is required")
-	}
 
 	if err := cluster.ApplyEnvironmentVariables(cluster.ExtraEnv); err != nil {
 		return err
 	}
 
-	keys, err := cluster.GetKeyFile()
+	keyFile, err := cluster.GetKeyFile()
 	if err != nil {
 		return err
 	}
@@ -74,13 +73,23 @@ func rekeyCluster(cluster config.Cluster) error {
 		return err
 	}
 
+	fmt.Println("initialized rekey process")
+
 	var newKeys *api.RekeyUpdateResponse
 
-	for _, key := range keys.Keys {
-		resp, err := v.RekeyUpdate(key, rekeyInit.Nonce)
+	keys := keyFile.Keys
+
+	if cluster.Keys.Autounseal {
+		keys = keyFile.RecoveryKeys
+	}
+
+	for i, key := range keys {
+		resp, err := v.RekeyUpdate(key, rekeyInit.Nonce, cluster.Keys.Autounseal)
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("[%02d/%02d] successfully entered key\n", i+1, cluster.Keys.Threshold)
 
 		if resp.Complete {
 			fmt.Println("rekeying successfully completed")
@@ -91,18 +100,31 @@ func rekeyCluster(cluster config.Cluster) error {
 		}
 	}
 
-	newName := fmt.Sprintf("%s_%s", cluster.Keys.Path, utils.GetCurrentDate())
+	fileName := strings.TrimSuffix(cluster.Keys.Path, filepath.Ext(cluster.Keys.Path))
+	newName := fmt.Sprintf("%s_%s%s", fileName, utils.GetCurrentDate(), filepath.Ext(cluster.Keys.Path))
 
 	fs.RenameFile(cluster.Keys.Path, newName)
 
 	fmt.Printf(
-		"renamed keyfile \"%s\" for cluster \"%s\" to \"%s\""+
-			"(snapshots depend on the unseal/recovery keys from the moment the snapshot has been created. "+
-			"This way you always have the matching unseal/recovery keys ready.\n",
+		"renamed keyfile \"%s\" for cluster \"%s\" to \"%s\".\n"+
+			"Hint: snapshots depend on the unseal/recovery keys from the moment the snapshot has been created.\n"+
+			"This way you always have the matching unseal/recovery keys for the specific snapshot if needed ready.\n",
 		cluster.Keys.Path, cluster.Name, newName,
 	)
 
-	if err := fs.WriteToFile(utils.ToJSON(newKeys), cluster.Keys.Path); err != nil {
+	newKeyfile := &api.InitResponse{
+		RootToken: keyFile.RootToken,
+	}
+
+	if cluster.Keys.Autounseal {
+		newKeyfile.RecoveryKeys = newKeys.Keys
+		newKeyfile.RecoveryKeysB64 = newKeys.KeysB64
+	} else {
+		newKeyfile.Keys = newKeys.Keys
+		newKeyfile.KeysB64 = newKeys.KeysB64
+	}
+
+	if err := fs.WriteToFile(utils.ToJSON(newKeyfile), cluster.Keys.Path); err != nil {
 		return err
 	}
 

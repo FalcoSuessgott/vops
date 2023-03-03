@@ -57,7 +57,7 @@ func generateRoot(cluster config.Cluster) error {
 		return err
 	}
 
-	keys, err := cluster.GetKeyFile()
+	keyFile, err := cluster.GetKeyFile()
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,13 @@ func generateRoot(cluster config.Cluster) error {
 
 	fmt.Println("started root token generation process")
 
-	for _, key := range keys.Keys {
+	keys := keyFile.Keys
+
+	if cluster.Keys.Autounseal {
+		keys = keyFile.RecoveryKeys
+	}
+
+	for _, key := range keys {
 		resp, err := v.GenerateRootUpdate(key, regenRoot.Nonce)
 		if err != nil {
 			return err
