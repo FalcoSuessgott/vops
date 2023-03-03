@@ -13,13 +13,13 @@ import (
 
 func TestE2E(t *testing.T) {
 	testCases := []struct {
-		name            string
-		command         []string
-		err             bool
+		name    string
+		command []string
+		err     bool
 	}{
 		{
 			name:    "example config",
-			command: []string{"config", "example", "--config", "vops.yml"},
+			command: []string{"config", "example", "--config=vops.yml"},
 			err:     false,
 		},
 		{
@@ -48,6 +48,11 @@ func TestE2E(t *testing.T) {
 			err:     false,
 		},
 		{
+			name:    "snapsht",
+			command: []string{"snapshot"},
+			err:     false,
+		},
+		{
 			name:    "snapsht save",
 			command: []string{"snapshot", "save", "-A"},
 			err:     false,
@@ -67,24 +72,24 @@ func TestE2E(t *testing.T) {
 			command: []string{"custom", "-l"},
 			err:     false,
 		},
-		// {
-		// 	name:    "custom",
-		// 	command: []string{"custom", "--command", "status", "-A"},
-		// 	err:     false,
-		// },
-		// {
-		// 	name:    "custom error",
-		// 	command: []string{"custom", "-x", "invalid", "-A"},
-		// 	err:     true,
-		// },
+		{
+			name:    "custom",
+			command: []string{"custom", "-x=status", "-A"},
+			err:     false,
+		},
+		{
+			name:    "custom error",
+			command: []string{"custom", "-x=invalid", "-l=false"},
+			err:     true,
+		},
 		{
 			name:    "adhoc",
-			command: []string{"adhoc", "-x", "vault status", "-A"},
+			command: []string{"adhoc", "-x=vault status", "-A"},
 			err:     false,
 		},
 		{
 			name:    "adhoc error",
-			command: []string{"adhoc"},
+			command: []string{"adhoc", "-x"},
 			err:     true,
 		},
 		{
@@ -96,12 +101,13 @@ func TestE2E(t *testing.T) {
 
 	b := bytes.NewBufferString("")
 
-	// 
 	os.Unsetenv("VOPS_CONFIG")
+
 	for _, tc := range testCases {
 		fmt.Println(tc.command)
 
 		cmd := NewRootCmd("", b)
+		cmd.SetArgs(nil)
 		cmd.SetArgs(tc.command)
 
 		err := cmd.Execute()

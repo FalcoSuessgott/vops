@@ -69,7 +69,7 @@ func rekeyCluster(cluster config.Cluster) error {
 		return err
 	}
 
-	rekeyInit, err := v.RekeyInit(cluster.Keys.Shares, cluster.Keys.Threshold, false)
+	rekeyInit, err := v.RekeyInit(cluster.Keys.Shares, cluster.Keys.Threshold, cluster.Keys.Autounseal)
 	if err != nil {
 		return err
 	}

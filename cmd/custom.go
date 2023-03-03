@@ -9,8 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var customCommand string
-var list bool
+var (
+	customCommand string
+	list          bool
+)
 
 func customCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -61,6 +63,8 @@ func customCmd() *cobra.Command {
 }
 
 func runCustomCommand(cluster config.Cluster, cmds map[string]interface{}) error {
+	fmt.Printf("\n[ %s ]\n", cluster.Name)
+
 	cmd, ok := cmds[customCommand]
 	if !ok {
 		return fmt.Errorf("invalid command")
@@ -68,8 +72,6 @@ func runCustomCommand(cluster config.Cluster, cmds map[string]interface{}) error
 
 	//nolint: forcetypeassert
 	parts := strings.Split(cmd.(string), " ")
-
-	fmt.Printf("\n[ %s ]\n", cluster.Name)
 
 	cluster.ExtraEnv["VAULT_ADDR"] = cluster.Addr
 	cluster.ExtraEnv["VAULT_TOKEN"] = cluster.Token
