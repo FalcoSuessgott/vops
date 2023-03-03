@@ -52,9 +52,10 @@ func configExampleCmd(w io.Writer) *cobra.Command {
 						Addr:         "http://127.0.0.1:8200",
 						TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}",
 						Keys: &config.KeyConfig{
-							Threshold: 1,
-							Shares:    1,
-							Path:      "{{ .Name }}.json",
+							Autounseal: false,
+							Threshold:  1,
+							Shares:     1,
+							Path:       "{{ .Name }}.json",
 						},
 						SnapshotDir: "{{ .Name }}/",
 						Nodes: []string{

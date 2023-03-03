@@ -50,13 +50,15 @@ Cluster:
     Addr: "http://127.0.0.1:8200"
     TokenExecCmd: "jq -r '.root_token' {{ .Keys.Path }}"
     Keys:
-      # see https://github.com/FalcoSuessgott/vops#about-the-keypath-file for the required format
-      Path: "{{ .Name }}.json"
+      Path: "{{ .Name }}.json" # https://github.com/FalcoSuessgott/vops#about-the-keypath-file
+      Autounseal: false  # true if autounseal configured
+      Shares: 1 # optional, default: 5
+      Threshold: 1 # optional: default: 3
     SnapshotDirectory: "snapshots/"
     Nodes:
       - "{{ .Addr }}"
     ExtraEnv:
-     VAULT_SKIP_VERIFY: true
+      VAULT_SKIP_VERIFY: true
 
   - Name: vault-prod
     Addr: "https://{{ .Name }}.example.com:8200"

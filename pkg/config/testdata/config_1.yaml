@@ -4,6 +4,7 @@ Cluster:
       TokenExecCmd: vault login
       Keys:
         Path: file.json
+        Autounseal: false
         Shares: 5
         Threshold: 3
       SnapshotDirectory: snapshot/

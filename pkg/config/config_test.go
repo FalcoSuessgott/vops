@@ -28,9 +28,10 @@ func TestParseConfig(t *testing.T) {
 						Addr:         "https://test.vault.de",
 						TokenExecCmd: "vault login",
 						Keys: &KeyConfig{
-							Path:      "file.json",
-							Shares:    5,
-							Threshold: 3,
+							Autounseal: false,
+							Path:       "file.json",
+							Shares:     5,
+							Threshold:  3,
 						},
 						SnapshotDir: "snapshot/",
 						Nodes: []string{
