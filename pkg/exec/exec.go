@@ -2,7 +2,7 @@ package exec
 
 import (
 	"bytes"
-	"fmt"
+	"errors"
 	"os/exec"
 	"strings"
 )
@@ -18,7 +18,7 @@ func Run(cmd []string) ([]byte, error) {
 	c.Stderr = &stderr
 
 	if c.Run() != nil {
-		return nil, fmt.Errorf("error while running command: %v", stderr.String())
+		return nil, errors.New(stderr.String())
 	}
 
 	return stdout.Bytes(), nil

@@ -97,16 +97,26 @@ func (c *Cluster) RenderConfig() (*Cluster, error) {
 }
 
 func (c Cluster) String() string {
+	var err error
+
 	policies := []string{}
 
-	if err := c.RunTokenExecCommand(); err == nil {
-		client, err := vault.NewTokenClient(c.Addr, c.Token)
+	if err = c.RunTokenExecCommand(); err == nil {
+		var client *vault.Vault
+
+		var pols []interface{}
+
+		client, err = vault.NewTokenClient(c.Addr, c.Token)
 		if err == nil {
-			pols, err := client.TokenLookup()
+			pols, err = client.TokenLookup()
 			if err == nil {
 				policies = append(policies, fmt.Sprintf("%v", pols))
 			}
 		}
+	}
+
+	if len(policies) == 0 {
+		policies = []string{strings.TrimSuffix(fmt.Sprintf("login failed: %v", err), "\n")}
 	}
 
 	return fmt.Sprintf(

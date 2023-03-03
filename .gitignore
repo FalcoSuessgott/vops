@@ -11,4 +11,7 @@ completions/
 dist/
 snapshots
 assets/raft
-cluster-1.json
+**/cluster-1.json
+**/cluster-1.json_*
+**/cluster-1
+**/vops.yml
