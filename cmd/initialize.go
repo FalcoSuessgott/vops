@@ -76,7 +76,7 @@ func initializeCluster(cluster config.Cluster) error {
 		return nil
 	}
 
-	resp, err := v.Initialize(cluster.Keys.Shares, cluster.Keys.Threshold, false)
+	resp, err := v.Initialize(cluster.Keys.Shares, cluster.Keys.Threshold, cluster.Keys.Autounseal)
 	if err != nil {
 		return err
 	}

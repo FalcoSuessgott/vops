@@ -29,9 +29,10 @@ type Cluster struct {
 
 // KeyConfig keyconfig parameters.
 type KeyConfig struct {
-	Path      string `json:"Path,omitempty" yaml:"Path,omitempty"`
-	Shares    int    `json:"Shares,omitempty" yaml:"Shares,omitempty"`
-	Threshold int    `json:"Threshold,omitempty" yaml:"Threshold,omitempty"`
+	Path       string `json:"Path,omitempty" yaml:"Path,omitempty"`
+	Autounseal bool   `json:"Autounseal,omitempty" yaml:"Autounseal,omitempty"`
+	Shares     int    `json:"Shares,omitempty" yaml:"Shares,omitempty"`
+	Threshold  int    `json:"Threshold,omitempty" yaml:"Threshold,omitempty"`
 }
 
 // RunTokenExecCommand executes the token command.
