@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var command string
+var adhocCommand string
 
 func adhocCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -18,7 +18,7 @@ func adhocCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if command == "" {
+			if adhocCommand == "" {
 				return fmt.Errorf("no command specified. Use --command flag")
 			}
 
@@ -45,13 +45,13 @@ func adhocCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&command, "command", "x", command, "the command to run")
+	cmd.Flags().StringVarP(&adhocCommand, "command", "x", adhocCommand, "the command to run")
 
 	return cmd
 }
 
 func runAdhocCommand(cluster config.Cluster) error {
-	parts := strings.Split(command, " ")
+	parts := strings.Split(adhocCommand, " ")
 
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
 
@@ -68,7 +68,7 @@ func runAdhocCommand(cluster config.Cluster) error {
 
 	fmt.Println("token exec command successful")
 	fmt.Println()
-	fmt.Printf("$> %s", command)
+	fmt.Printf("$> %s", adhocCommand)
 	fmt.Println()
 
 	out, err := exec.Run(parts)

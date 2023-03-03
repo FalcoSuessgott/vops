@@ -9,14 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type customOptions struct {
-	Command string
-	List    bool
-}
+var customCommand string
+var list bool
 
 func customCmd() *cobra.Command {
-	o := &customOptions{}
-
 	cmd := &cobra.Command{
 		Use:           "custom",
 		Aliases:       []string{"c"},
@@ -24,7 +20,7 @@ func customCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if o.List {
+			if list {
 				fmt.Println("\n[ Available Commands ]")
 				for name, cmd := range cfg.CustomCmds {
 					fmt.Printf("\"%s\": \"%s\"\n", name, cmd)
@@ -37,7 +33,7 @@ func customCmd() *cobra.Command {
 
 			if allCluster {
 				for _, cluster := range cfg.Cluster {
-					if err := o.runCustomCommand(cluster, cfg.CustomCmds); err != nil {
+					if err := runCustomCommand(cluster, cfg.CustomCmds); err != nil {
 						return err
 					}
 				}
@@ -50,7 +46,7 @@ func customCmd() *cobra.Command {
 				return err
 			}
 
-			if err := o.runCustomCommand(*cluster, cfg.CustomCmds); err != nil {
+			if err := runCustomCommand(*cluster, cfg.CustomCmds); err != nil {
 				return err
 			}
 
@@ -58,14 +54,14 @@ func customCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&o.Command, "command", "x", o.Command, "the name of command defined in vops.yaml to run")
-	cmd.Flags().BoolVarP(&o.List, "list", "l", o.List, "list all available custom commands")
+	cmd.Flags().StringVarP(&customCommand, "command", "x", customCommand, "the name of command defined in vops.yaml to run")
+	cmd.Flags().BoolVarP(&list, "list", "l", list, "list all available custom commands")
 
 	return cmd
 }
 
-func (o *customOptions) runCustomCommand(cluster config.Cluster, cmds map[string]interface{}) error {
-	cmd, ok := cmds[o.Command]
+func runCustomCommand(cluster config.Cluster, cmds map[string]interface{}) error {
+	cmd, ok := cmds[customCommand]
 	if !ok {
 		return fmt.Errorf("invalid command")
 	}

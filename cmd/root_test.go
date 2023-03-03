@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"io"
+	"os"
 	"testing"
 
 	"github.com/FalcoSuessgott/vops/pkg/fs"
@@ -11,9 +13,9 @@ import (
 
 func TestE2E(t *testing.T) {
 	testCases := []struct {
-		name    string
-		command []string
-		err     bool
+		name            string
+		command         []string
+		err             bool
 	}{
 		{
 			name:    "example config",
@@ -27,60 +29,79 @@ func TestE2E(t *testing.T) {
 		},
 		{
 			name:    "initialize",
-			command: []string{"init", "-c", "cluster-1"},
+			command: []string{"init", "-A"},
 			err:     false,
 		},
 		{
 			name:    "unseal",
-			command: []string{"unseal", "-c", "cluster-1"},
+			command: []string{"unseal", "-A"},
 			err:     false,
 		},
 		{
 			name:    "seal",
-			command: []string{"seal", "-c", "cluster-1"},
+			command: []string{"seal", "-A"},
 			err:     false,
 		},
 		{
 			name:    "unseal",
-			command: []string{"unseal", "-c", "cluster-1"},
+			command: []string{"unseal", "-A"},
 			err:     false,
 		},
 		{
 			name:    "snapsht save",
-			command: []string{"snapshot", "save", "-c", "cluster-1"},
+			command: []string{"snapshot", "save", "-A"},
 			err:     false,
 		},
 		{
 			name:    "login",
-			command: []string{"login", "-c", "cluster-1"},
+			command: []string{"login", "-A"},
 			err:     false,
 		},
 		{
 			name:    "rekey",
-			command: []string{"rekey", "-c", "cluster-1"},
+			command: []string{"rekey", "-A"},
 			err:     false,
 		},
 		{
-			name:    "custom",
-			command: []string{"custom", "-x", "status", "-c", "cluster-1"},
+			name:    "custom list",
+			command: []string{"custom", "-l"},
 			err:     false,
 		},
+		// {
+		// 	name:    "custom",
+		// 	command: []string{"custom", "--command", "status", "-A"},
+		// 	err:     false,
+		// },
+		// {
+		// 	name:    "custom error",
+		// 	command: []string{"custom", "-x", "invalid", "-A"},
+		// 	err:     true,
+		// },
 		{
 			name:    "adhoc",
-			command: []string{"adhoc", "-x", "vault status", "cluster-1"},
+			command: []string{"adhoc", "-x", "vault status", "-A"},
 			err:     false,
+		},
+		{
+			name:    "adhoc error",
+			command: []string{"adhoc"},
+			err:     true,
 		},
 		{
 			name:    "generate-root",
-			command: []string{"generate-root", "-c", "cluster-1"},
+			command: []string{"generate-root", "-A"},
 			err:     false,
 		},
 	}
 
 	b := bytes.NewBufferString("")
-	cmd := NewRootCmd("", b)
 
+	// 
+	os.Unsetenv("VOPS_CONFIG")
 	for _, tc := range testCases {
+		fmt.Println(tc.command)
+
+		cmd := NewRootCmd("", b)
 		cmd.SetArgs(tc.command)
 
 		err := cmd.Execute()
