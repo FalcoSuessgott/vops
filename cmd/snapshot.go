@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
+	"os"
 	"path"
 
 	"github.com/FalcoSuessgott/vops/pkg/config"
@@ -10,6 +10,11 @@ import (
 	"github.com/FalcoSuessgott/vops/pkg/utils"
 	"github.com/FalcoSuessgott/vops/pkg/vault"
 	"github.com/spf13/cobra"
+)
+
+var (
+	snapshotFile string
+	force        bool
 )
 
 func snapshotCmd() *cobra.Command {
@@ -71,13 +76,7 @@ func snapRestoreCmd() *cobra.Command {
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if allCluster {
-				for _, cluster := range cfg.Cluster {
-					if err := restoreSnapshot(cluster); err != nil {
-						return err
-					}
-				}
-
-				return nil
+				return fmt.Errorf("cannot restore a snapshot for all cluster")
 			}
 
 			cluster, err := cfg.GetCluster(cluster)
@@ -85,9 +84,12 @@ func snapRestoreCmd() *cobra.Command {
 				return err
 			}
 
-			return restoreSnapshot(*cluster)
+			return restoreSnapshot(*cluster, snapshotFile)
 		},
 	}
+
+	cmd.Flags().StringVarP(&snapshotFile, "snapshot", "s", adhocCommand, "the cluster snapshot file")
+	cmd.Flags().BoolVarP(&force, "force", "f", force, "bypasses checks ensuring the Autounseal or shamir keys are consistent with the snapshot data.")
 
 	return cmd
 }
@@ -121,7 +123,8 @@ func saveSnapshot(cluster config.Cluster) error {
 
 	fs.CreateDirIfNotExist(cluster.SnapshotDir)
 
-	snapshotName := path.Join(cluster.SnapshotDir, utils.GetCurrentDate())
+	timestamp := utils.GetCurrentDate()
+	snapshotName := path.Join(cluster.SnapshotDir, fmt.Sprintf("%s_%s.gz", cluster.Name, timestamp))
 
 	if fs.WriteToFile(w.Bytes(), snapshotName) != nil {
 		return err
@@ -129,10 +132,23 @@ func saveSnapshot(cluster config.Cluster) error {
 
 	fmt.Printf("created snapshot file \"%s\" for cluster \"%s\"\n", snapshotName, cluster.Name)
 
+	keyFile, err := cluster.GetKeyFile()
+	if err != nil {
+		return err
+	}
+
+	keyFileName := path.Join(cluster.SnapshotDir, fmt.Sprintf("%s_%s_keyfile.json", cluster.Name, timestamp))
+
+	if fs.WriteToFile(utils.ToJSON(keyFile), keyFileName) != nil {
+		return err
+	}
+
+	fmt.Printf("created snapshot keyfile \"%s\" for cluster \"%s\"\n", keyFileName, cluster.Name)
+
 	return nil
 }
 
-func restoreSnapshot(cluster config.Cluster) error {
+func restoreSnapshot(cluster config.Cluster, snapshotFile string) error {
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
 
 	if err := cluster.ApplyEnvironmentVariables(cluster.ExtraEnv); err != nil {
@@ -150,13 +166,20 @@ func restoreSnapshot(cluster config.Cluster) error {
 		return err
 	}
 
-	var b bytes.Reader
-
-	if err := v.SnapshotRestore(&b, true); err != nil {
+	reader, err := os.Open(snapshotFile)
+	if err != nil {
 		return err
 	}
 
-	fmt.Printf("restrored snapshot for %s\n", cluster.Name)
+	defer reader.Close()
+
+	if err := v.SnapshotRestore(reader, force); err != nil {
+		return err
+	}
+
+	fmt.Printf("restrored snapshot for %s\n"+
+		"Remember to use the root token und unseal/recovery keys from the snapshot you just restored\n",
+		cluster.Name)
 
 	return nil
 }

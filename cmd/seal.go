@@ -35,8 +35,6 @@ func sealCmd() *cobra.Command {
 				return err
 			}
 
-			fmt.Printf("cluster \"%s\" sealed\n", cluster.Name)
-
 			return nil
 		},
 	}

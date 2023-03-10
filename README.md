@@ -28,7 +28,7 @@ vops generate-root -c <cluster>
 vops rekey -c <cluster>
 # save/restory snapshots
 vops snapshot save -c <cluster>
-vops snapshot restore -c <cluster>
+vops snapshot restore -c <cluster> -s <snapshot-file> -f 
 # custom commands
 vops custom -c <cluster> -x <custom command>
 # adhoc commands
@@ -91,10 +91,6 @@ CustomCmds:
 <img src="https://img.shields.io/github/v/release/FalcoSuessgott/vops" alt="drawing"/>
 <img src="https://img.shields.io/docker/pulls/falcosuessgott/vops" alt="drawing"/>
 </div>
-
-
-***`vops` is in early stage and is likely to change***
-
 
 # Background
 I automate, develop and maintain a lot of Vault cluster for different clients. When automating Vault using tools such as `terraform` and `ansible` I was missing a small utility that allows me to quickly perform certain operations like generate a new root token or create a snapshot. Thus I came up with `vops`, which stands for **v**ault-**op**eration**s**
@@ -258,7 +254,25 @@ cluster "cluster-1" sealed
 ```
 
 ## Rekey
-tbd. 
+> generates new unseal/recover keys
+```bash
+> vops rekey -c <cluster>
+[ Rekey ]
+reading ./assets/vops.yaml
+
+[ cluster-1 ]
+performing a rekey for cluster-1 with 5 shares and a threshold of 3
+applying VAULT_SKIP_VERIFY
+using keyfile "cluster-1.json"
+initialized rekey process
+[01/03] successfully entered key
+[02/03] successfully entered key
+[03/03] successfully entered key
+rekeying successfully completed
+renamed keyfile "cluster-1.json" for cluster "cluster-1" to "cluster-1_2023-03-10-16:05:16.json".
+Hint: snapshots depend on the unseal/recovery keys from the moment the snapshot has been created.
+This way you always have the matching unseal/recovery keys for the specific snapshot if needed ready.
+```
 
 
 ## Generate Root
@@ -278,19 +292,32 @@ new root token: "hvs.dmhO9aVPT0aBB1G7nrj3UdDh" (make sure to update your token e
 
 ## Snapshots
 ### Snapshot save
+> creates a snapshot and stores the corresponding keyfile with it (only integrated storage)
 ```bash
 > vops snapshot save -c <cluster>
-[ Snapshot Save ]
-using vops.yaml
+[ Save ]
+reading ./assets/vops.yaml
 
 [ cluster-1 ]
-applying VAULT_TLS_SKIP_VERIFY
+applying VAULT_SKIP_VERIFY
 executed token exec command
-created snapshot file "cluster-1/20230216155514" for cluster "cluster-1"
+created snapshot file "snapshots/cluster-1_2023-03-10-16:03:38.gz" for cluster "cluster-1"
+created snapshot keyfile "snapshots/cluster-1_2023-03-10-16:03:38_keyfile.json" for cluster "cluster-1"
 ```
 
 ### Snapshot Restore
-tbd.
+> restores a snapshot (only integrated storage)
+```bash
+> vos snapshot restore -c <cluster> -s <snapshot-file>
+[ Restore ]
+reading ./assets/vops.yaml
+
+[ cluster-1 ]
+applying VAULT_SKIP_VERIFY
+executed token exec command
+restrored snapshot for cluster-1
+Remember to use the root token und unseal/recovery keys from the snapshot you just restored    
+```
 
 ## Custom Commands
 You can run any defined custom commands:

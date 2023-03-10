@@ -52,7 +52,7 @@ token: ## copies vault token in clipboard buffer
 
 .PHONY: clean
 clean: ## clean the development vault
-	@rm -rf cmd/vops.yml cmd/cluster-1* snapshots/ coverage.out dist/ $(projectname) manpages/ dist/ completions/ assets/raft/* || true
+	@rm -rf cluster-1.* cmd/vops.yml cmd/cluster-1* snapshots/ coverage.out dist/ $(projectname) manpages/ dist/ completions/ assets/raft/* || true
 	@kill -9 $(shell pgrep -x vault) 2> /dev/null || true
 
 .PHONY: vhs
