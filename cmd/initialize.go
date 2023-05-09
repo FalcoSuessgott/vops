@@ -52,7 +52,7 @@ func initializeCluster(cluster config.Cluster) error {
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
 	fmt.Printf("attempting intialization of cluster \"%s\" with %d shares and a threshold of %d\n", cluster.Name, cluster.Keys.Shares, cluster.Keys.Threshold)
 
-	if cluster.Keys.Path == "" {
+	if cluster.Keys == nil || cluster.Keys.Path == "" {
 		return fmt.Errorf("a keyfile location is required")
 	}
 

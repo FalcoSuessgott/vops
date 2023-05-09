@@ -49,7 +49,7 @@ func generateRoot(cluster config.Cluster) error {
 
 	fmt.Printf("\n[ %s ]\n", cluster.Name)
 
-	if cluster.Keys.Path == "" {
+	if cluster.Keys == nil || cluster.Keys.Path == "" {
 		return fmt.Errorf("a key file containing unseal/recovery keys for that cluster is required")
 	}
 

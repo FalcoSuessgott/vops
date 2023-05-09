@@ -132,19 +132,6 @@ func saveSnapshot(cluster config.Cluster) error {
 
 	fmt.Printf("created snapshot file \"%s\" for cluster \"%s\"\n", snapshotName, cluster.Name)
 
-	keyFile, err := cluster.GetKeyFile()
-	if err != nil {
-		return err
-	}
-
-	keyFileName := path.Join(cluster.SnapshotDir, fmt.Sprintf("%s_%s_keyfile.json", cluster.Name, timestamp))
-
-	if fs.WriteToFile(utils.ToJSON(keyFile), keyFileName) != nil {
-		return err
-	}
-
-	fmt.Printf("created snapshot keyfile \"%s\" for cluster \"%s\"\n", keyFileName, cluster.Name)
-
 	return nil
 }
 
