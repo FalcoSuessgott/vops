@@ -47,16 +47,14 @@ func ParseConfig(path string) (*Config, error) {
 			return nil, fmt.Errorf("a cluster address is required")
 		}
 
-		if c.Keys == nil {
-			return nil, fmt.Errorf("a keyfile is required")
-		}
+		if c.Keys != nil {
+			if c.Keys.Shares == 0 {
+				c.Keys.Shares = defaultKeyShares
+			}
 
-		if c.Keys.Shares == 0 {
-			c.Keys.Shares = defaultKeyShares
-		}
-
-		if c.Keys.Threshold == 0 {
-			c.Keys.Threshold = defaultKeyThreshold
+			if c.Keys.Threshold == 0 {
+				c.Keys.Threshold = defaultKeyThreshold
+			}
 		}
 
 		c.Env = utils.GetEnvs()

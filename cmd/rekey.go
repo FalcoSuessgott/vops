@@ -56,6 +56,10 @@ func rekeyCluster(cluster config.Cluster) error {
 		return err
 	}
 
+	if cluster.Keys == nil || cluster.Keys.Path == "" {
+		return fmt.Errorf("a key file containing unseal/recovery keys for that cluster is required")
+	}
+
 	keyFile, err := cluster.GetKeyFile()
 	if err != nil {
 		return err
